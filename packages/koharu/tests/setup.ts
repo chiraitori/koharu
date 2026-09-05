@@ -92,6 +92,12 @@ beforeEach(() => {
     processingStages: ['detection', 'ocr', 'translation', 'inpainting'],
     settingsOpen: false,
     shortcuts: defaultShortcuts,
+    sidebarPanel: 'properties',
+    agentMessages: [],
+    agentPrompt: '',
+    agentRunning: null,
+    agentActivity: null,
+    agentPageActivity: {},
   })
 })
 

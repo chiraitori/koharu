@@ -50,7 +50,19 @@
     "signingIn": "Waiting for sign-in...",
     "thinking": "Thinking...",
     "title": "Agent",
-    "working": "Working..."
+    "working": "Working...",
+    "tools": {
+      "addTextBox": "Adding text box…",
+      "deleteElements": "Deleting elements…",
+      "importImages": "Importing images…",
+      "inspectProject": "Inspecting project…",
+      "runPipeline": "Running pipeline…",
+      "setGeometry": "Updating position…",
+      "setSourceText": "Updating source text…",
+      "setTranslation": "Updating translation…",
+      "setTypography": "Updating typography…",
+      "viewPage": "Viewing page…"
+    }
   },
   "canvas": {
     "empty": "Select a page to begin.",
@@ -209,7 +221,8 @@
     "ru-RU": "Русский",
     "tr-TR": "Türkçe",
     "zh-CN": "简体中文",
-    "zh-TW": "繁體中文"
+    "zh-TW": "繁體中文",
+    "vi-VN": "Tiếng Việt"
   },
   "layers": {
     "delete": "Delete {{name}}",
@@ -425,11 +438,31 @@
     },
     "tabs": {
       "appearance": "Appearance",
+      "mcp": "MCP",
       "pipeline": "Pipeline",
       "providers": "Providers",
       "shortcuts": "Shortcuts",
       "translation": "Translation",
       "typesetting": "Typesetting"
+    },
+    "mcp": {
+      "active": "Running",
+      "clientsDesc": "Add one of these configurations to your preferred AI assistant to connect it to Koharu.",
+      "clientsTitle": "Client Setup & Snippets",
+      "description": "Expose Koharu tools over local Streamable HTTP / SSE for AI client automation (Google Antigravity, Claude Desktop, Cursor, OpenCode).",
+      "enableDesc": "Runs an embedded MCP server listening on localhost.",
+      "enableTitle": "Enable MCP Server",
+      "endpointDesc": "Standard HTTP/SSE endpoint for clients.",
+      "endpointTitle": "Endpoint URL",
+      "inactive": "Disabled",
+      "portDesc": "Local TCP port for the MCP endpoint (default: 9999).",
+      "portLabel": "Port",
+      "portTitle": "Server Port",
+      "service": "Server Configuration",
+      "serviceDesc": "Enable the built-in MCP server to let external AI models inspect, translate, and automate your manga projects.",
+      "title": "Model Context Protocol (MCP)",
+      "toolsDesc": "Tools exposed to connected AI models for end-to-end translation and scene editing.",
+      "toolsTitle": "Available Automation Tools"
     },
     "title": "Settings",
     "translation": {

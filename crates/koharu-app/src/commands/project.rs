@@ -1,4 +1,8 @@
-use std::{collections::HashSet, io::Cursor, path::PathBuf};
+use std::{
+    collections::HashSet,
+    io::Cursor,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{Context as _, Result, anyhow, bail};
 use image::{DynamicImage, ImageFormat, RgbaImage};
@@ -179,14 +183,93 @@ pub(crate) struct ProjectLibrary {
     root: PathBuf,
 }
 
+fn is_writable_directory(dir: &Path) -> bool {
+    if std::fs::create_dir_all(dir).is_err() {
+        return false;
+    }
+    let probe = dir.join(format!(".write_probe_{}", std::process::id()));
+    match std::fs::write(&probe, b"") {
+        Ok(()) => {
+            let _ = std::fs::remove_file(&probe);
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+fn copy_dir_all(src: &Path, dst: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        let from = entry.path();
+        let to = dst.join(entry.file_name());
+        if ty.is_dir() {
+            copy_dir_all(&from, &to)?;
+        } else {
+            std::fs::copy(&from, &to)?;
+        }
+    }
+    Ok(())
+}
+
+fn migrate_projects_if_needed(source: &Path, destination: &Path) {
+    let Ok(entries) = std::fs::read_dir(source) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let is_project = path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("khrproj"))
+            && (path.join("state-a.khr").is_file() || path.join("state-b.khr").is_file());
+        if is_project {
+            let target = destination.join(entry.file_name());
+            if !target.exists() {
+                let _ = copy_dir_all(&path, &target);
+            }
+        }
+    }
+}
+
 impl ProjectLibrary {
     pub(crate) fn new() -> Result<Self> {
-        let root = dirs::document_dir()
-            .context("the Documents directory is unavailable")?
-            .join("Koharu");
-        std::fs::create_dir_all(&root)
-            .with_context(|| format!("failed to create {}", root.display()))?;
+        let root = Self::resolve_library_root()?;
         Ok(Self { root })
+    }
+
+    fn resolve_library_root() -> Result<PathBuf> {
+        if let Some(doc_dir) = dirs::document_dir() {
+            let doc_root = doc_dir.join("Koharu");
+            if is_writable_directory(&doc_root) {
+                return Ok(doc_root);
+            }
+            tracing::warn!(
+                "Documents directory at {} is not writable; falling back to local data directory",
+                doc_root.display()
+            );
+        }
+
+        if let Some(data_dir) = dirs::data_local_dir() {
+            let app_root = data_dir.join("Koharu").join("Projects");
+            if is_writable_directory(&app_root) {
+                if let Some(doc_dir) = dirs::document_dir() {
+                    let doc_root = doc_dir.join("Koharu");
+                    migrate_projects_if_needed(&doc_root, &app_root);
+                }
+                return Ok(app_root);
+            }
+        }
+
+        if let Some(home_dir) = dirs::home_dir() {
+            let home_root = home_dir.join(".koharu").join("projects");
+            if is_writable_directory(&home_root) {
+                return Ok(home_root);
+            }
+        }
+
+        bail!("no writable project directory found")
     }
 
     pub(crate) fn list(&self) -> Result<Vec<ProjectSummary>> {

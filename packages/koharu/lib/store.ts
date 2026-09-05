@@ -13,8 +13,16 @@ import type {
   Stage,
   StartupState,
   ModelResources,
+  RunId,
 } from '@koharu/bridge/protocol'
 import { toast } from '@koharu/ui/components/toast'
+
+export interface ConversationMessage {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+  error?: boolean
+}
 
 export type CanvasTool = 'select' | 'text' | 'draw' | 'eraser' | 'color_picker' | 'remove' | 'pan'
 export const MIN_BRUSH_DIAMETER = 1
@@ -57,6 +65,12 @@ interface KoharuStore {
   processingStages: Stage[]
   settingsOpen: boolean
   shortcuts: Shortcuts
+  sidebarPanel: 'properties' | 'agent'
+  agentMessages: ConversationMessage[]
+  agentPrompt: string
+  agentRunning: RunId | null
+  agentActivity: string | null
+  agentPageActivity: Record<string, string>
   selectPages: (pages: EntityId[]) => void
   showInspector: (section: InspectorSection) => void
   setProcessingScope: (scope: PipelineScope) => void
@@ -69,6 +83,15 @@ interface KoharuStore {
   requestCanvasFit: () => void
   dismissJob: (id: string) => void
   dismissDownload: (id: number) => void
+  setSidebarPanel: (panel: 'properties' | 'agent') => void
+  setAgentMessages: (
+    messages: ConversationMessage[] | ((prev: ConversationMessage[]) => ConversationMessage[]),
+  ) => void
+  setAgentPrompt: (prompt: string) => void
+  setAgentRunning: (running: RunId | null) => void
+  setAgentActivity: (activity: string | null) => void
+  setAgentPageActivity: (page: string, activity: string | null) => void
+  clearAgentPageActivity: () => void
 }
 
 export const defaultShortcuts: Shortcuts = {
@@ -105,6 +128,12 @@ export const useKoharuStore = create<KoharuStore>()((set) => ({
   processingStages: [...pipelineStages],
   settingsOpen: false,
   shortcuts: defaultShortcuts,
+  sidebarPanel: 'properties',
+  agentMessages: [],
+  agentPrompt: '',
+  agentRunning: null,
+  agentActivity: null,
+  agentPageActivity: {},
   selectPages: (selectedPages) => set({ selectedPages: [...new Set(selectedPages)] }),
   showInspector: (inspector) => set({ inspector }),
   setProcessingScope: (processingScope) => set({ processingScope }),
@@ -130,6 +159,26 @@ export const useKoharuStore = create<KoharuStore>()((set) => ({
       delete downloads[String(id)]
       return { downloads }
     }),
+  setSidebarPanel: (sidebarPanel) => set({ sidebarPanel }),
+  setAgentMessages: (messages) =>
+    set((state) => ({
+      agentMessages:
+        typeof messages === 'function' ? messages(state.agentMessages) : messages,
+    })),
+  setAgentPrompt: (agentPrompt) => set({ agentPrompt }),
+  setAgentRunning: (agentRunning) => set({ agentRunning }),
+  setAgentActivity: (agentActivity) => set({ agentActivity }),
+  setAgentPageActivity: (page, activity) =>
+    set((state) => {
+      const next = { ...state.agentPageActivity }
+      if (activity === null) {
+        delete next[page]
+      } else {
+        next[page] = activity
+      }
+      return { agentPageActivity: next }
+    }),
+  clearAgentPageActivity: () => set({ agentPageActivity: {} }),
 }))
 
 export function receiveStartupState(state: StartupState): void {

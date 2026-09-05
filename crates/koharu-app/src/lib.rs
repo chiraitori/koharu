@@ -2,6 +2,7 @@
 
 mod app;
 mod commands;
+pub(crate) mod mcp;
 
 pub use app::run;
 pub use commands::bindings;

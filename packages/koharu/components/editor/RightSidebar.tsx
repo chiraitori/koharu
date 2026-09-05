@@ -1,16 +1,17 @@
 'use client'
 
 import { Bot, SlidersHorizontal } from 'lucide-react'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AgentPanel } from '@/components/editor/AgentPanel'
 import { Inspector } from '@/components/editor/Inspector'
+import { useKoharuStore } from '@/lib/store'
 import { Button } from '@koharu/ui/components/button'
 
 export function RightSidebar() {
   const { t } = useTranslation()
-  const [panel, setPanel] = useState<'agent' | 'properties'>('properties')
+  const panel = useKoharuStore((state) => state.sidebarPanel)
+  const setPanel = useKoharuStore((state) => state.setSidebarPanel)
 
   return (
     <aside className='flex h-full min-h-0 flex-col bg-[var(--surface-panel)]'>

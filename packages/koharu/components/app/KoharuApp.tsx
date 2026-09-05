@@ -36,19 +36,26 @@ export function KoharuApp() {
       )}
     >
       <TitleBar />
-      {settingsOpen ? (
-        <SettingsPage />
-      ) : project === undefined ? (
-        <main className='grid min-h-0 flex-1 place-items-center bg-[var(--surface-canvas)]'>
-          <div className='flex items-center gap-3 text-[12px] text-muted-foreground'>
-            <span className='size-2 rounded-full bg-primary' />
-            {t('startup.opening')}
-          </div>
-        </main>
+      {project === undefined ? (
+        settingsOpen ? (
+          <SettingsPage />
+        ) : (
+          <main className='grid min-h-0 flex-1 place-items-center bg-[var(--surface-canvas)]'>
+            <div className='flex items-center gap-3 text-[12px] text-muted-foreground'>
+              <span className='size-2 rounded-full bg-primary' />
+              {t('startup.opening')}
+            </div>
+          </main>
+        )
       ) : project === null ? (
-        <StartView />
+        settingsOpen ? <SettingsPage /> : <StartView />
       ) : (
-        <Editor />
+        <>
+          <div className={cn('min-h-0 flex-1 flex flex-col', settingsOpen && 'hidden')}>
+            <Editor />
+          </div>
+          {settingsOpen ? <SettingsPage /> : null}
+        </>
       )}
     </div>
   )

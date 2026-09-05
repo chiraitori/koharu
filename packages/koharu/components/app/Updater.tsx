@@ -33,6 +33,9 @@ export function Updater() {
   const [state, setState] = useState<UpdateState | null>(null)
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      return
+    }
     let active = true
     void check()
       .then((update) => {

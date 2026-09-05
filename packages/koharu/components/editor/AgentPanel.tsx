@@ -6,7 +6,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { call } from '@/lib/backend'
-import { pageKey, pagesKey, projectKey, refresh } from '@/lib/queries'
+import { pageKey, pagesKey, projectKey, refresh, usePage } from '@/lib/queries'
+import { useKoharuStore } from '@/lib/store'
 import {
   commands,
   type AgentStatus,
@@ -14,7 +15,6 @@ import {
   type Event,
   type LoginEvent,
   type Reasoning,
-  type RunId,
 } from '@koharu/bridge/protocol'
 import { Badge } from '@koharu/ui/components/badge'
 import { Button } from '@koharu/ui/components/button'
@@ -28,11 +28,31 @@ import {
 } from '@koharu/ui/components/select'
 import { Textarea } from '@koharu/ui/components/textarea'
 
-interface ConversationMessage {
-  id: string
-  role: 'user' | 'assistant'
-  text: string
-  error?: boolean
+function toolActionDescription(name: string, t: (key: string) => string): string {
+  switch (name) {
+    case 'view_page':
+      return t('agent.tools.viewPage')
+    case 'run_pipeline':
+      return t('agent.tools.runPipeline')
+    case 'set_translation':
+      return t('agent.tools.setTranslation')
+    case 'set_source_text':
+      return t('agent.tools.setSourceText')
+    case 'add_text_box':
+      return t('agent.tools.addTextBox')
+    case 'set_typography':
+      return t('agent.tools.setTypography')
+    case 'set_geometry':
+      return t('agent.tools.setGeometry')
+    case 'inspect_project':
+      return t('agent.tools.inspectProject')
+    case 'import_images':
+      return t('agent.tools.importImages')
+    case 'delete_elements':
+      return t('agent.tools.deleteElements')
+    default:
+      return `${t('agent.applying')}: ${name}`
+  }
 }
 
 export function AgentPanel() {
@@ -40,16 +60,35 @@ export function AgentPanel() {
   const [status, setStatus] = useState<AgentStatus | null>(null)
   const [loginEvent, setLoginEvent] = useState<LoginEvent | null>(null)
   const [loggingIn, setLoggingIn] = useState(false)
-  const [messages, setMessages] = useState<ConversationMessage[]>([])
-  const [prompt, setPrompt] = useState('')
-  const [running, setRunning] = useState<RunId | null>(null)
-  const [activity, setActivity] = useState<string | null>(null)
+  const messages = useKoharuStore((state) => state.agentMessages)
+  const setMessages = useKoharuStore((state) => state.setAgentMessages)
+  const prompt = useKoharuStore((state) => state.agentPrompt)
+  const setPrompt = useKoharuStore((state) => state.setAgentPrompt)
+  const running = useKoharuStore((state) => state.agentRunning)
+  const setRunning = useKoharuStore((state) => state.setAgentRunning)
+  const activity = useKoharuStore((state) => state.agentActivity)
+  const setActivity = useKoharuStore((state) => state.setAgentActivity)
+  const setAgentPageActivity = useKoharuStore((state) => state.setAgentPageActivity)
+  const clearAgentPageActivity = useKoharuStore((state) => state.clearAgentPageActivity)
+  const activePageId = usePage().data?.id
 
   useEffect(() => {
     void call(commands.getAgentStatus)
-      .then(setStatus)
+      .then((agentStatus) => {
+        setStatus(agentStatus)
+        const currentRunning = useKoharuStore.getState().agentRunning
+        const currentActivity = useKoharuStore.getState().agentActivity
+        if (agentStatus.running && !currentRunning) {
+          setRunning(agentStatus.running)
+          if (!currentActivity) setActivity(t('agent.working'))
+        } else if (!agentStatus.running && currentRunning) {
+          setRunning(null)
+          setActivity(null)
+          clearAgentPageActivity()
+        }
+      })
       .catch(() => undefined)
-  }, [])
+  }, [clearAgentPageActivity, setActivity, setRunning, t])
 
   const selectedModel = useMemo(
     () =>
@@ -165,7 +204,7 @@ export function AgentPanel() {
       </div>
 
       <ScrollArea className='min-h-0 flex-1'>
-        {messages.length ? (
+        {messages.length || running || activity ? (
           <div className='grid gap-3 p-3'>
             {messages.map((message) => (
               <div
@@ -183,9 +222,9 @@ export function AgentPanel() {
               </div>
             ))}
             {activity ? (
-              <div className='flex items-center gap-1.5 text-[10px] text-muted-foreground'>
-                <span className='size-1.5 rounded-full bg-primary' />
-                {activity}
+              <div className='flex items-center gap-2 rounded-lg bg-primary/10 px-2.5 py-1.5 text-[10px] text-primary'>
+                <span className='size-1.5 shrink-0 rounded-full bg-primary animate-ping' />
+                <span className='font-medium'>{activity}</span>
               </div>
             ) : null}
           </div>
@@ -268,6 +307,8 @@ export function AgentPanel() {
     setStatus(await call(commands.logoutAgent))
     setMessages([])
     setActivity(null)
+    setRunning(null)
+    clearAgentPageActivity()
   }
 
   async function saveConfig(config: Config) {
@@ -287,7 +328,7 @@ export function AgentPanel() {
       { id, role: 'user', text: message },
       { id: assistant, role: 'assistant', text: '' },
     ])
-    setActivity(t('agent.working'))
+    setActivity(t('agent.working', { defaultValue: 'Đang xử lý...' }))
 
     const channel = new Channel<Event>()
     channel.onmessage = (event) => {
@@ -299,20 +340,25 @@ export function AgentPanel() {
           updateAssistant((text) => text + event.delta)
           break
         case 'reasoning_delta':
-          setActivity(t('agent.thinking'))
+          setActivity(t('agent.thinking', { defaultValue: 'Đang suy nghĩ...' }))
           break
-        case 'tool_started':
-          setActivity(t('agent.applying'))
+        case 'tool_started': {
+          const desc = toolActionDescription(event.name, t)
+          setActivity(desc)
+          if (activePageId) setAgentPageActivity(activePageId, desc)
           break
+        }
         case 'tool_finished':
           if (event.changed) void refresh(projectKey, pagesKey, pageKey)
-          setActivity(t('agent.working'))
+          setActivity(t('agent.working', { defaultValue: 'Đang xử lý...' }))
+          clearAgentPageActivity()
           break
         case 'completed':
           settled = true
           updateAssistant(() => event.message)
           setRunning(null)
           setActivity(null)
+          clearAgentPageActivity()
           void refresh(projectKey, pagesKey, pageKey)
           break
         case 'failed':
@@ -320,12 +366,14 @@ export function AgentPanel() {
           updateAssistant(() => event.message, true)
           setRunning(null)
           setActivity(null)
+          clearAgentPageActivity()
           break
         case 'cancelled':
           settled = true
-          updateAssistant((text) => text || t('agent.cancelled'))
+          updateAssistant((text) => text || t('agent.cancelled', { defaultValue: 'Đã hủy' }))
           setRunning(null)
           setActivity(null)
+          clearAgentPageActivity()
           break
       }
     }
@@ -334,9 +382,10 @@ export function AgentPanel() {
       if (!settled) setRunning(run)
     } catch (error) {
       settled = true
-      updateAssistant(() => (error instanceof Error ? error.message : t('agent.failed')), true)
+      updateAssistant(() => (error instanceof Error ? error.message : t('agent.failed', { defaultValue: 'Thất bại' })), true)
       setRunning(null)
       setActivity(null)
+      clearAgentPageActivity()
     }
 
     function updateAssistant(update: (text: string) => string, error = false) {

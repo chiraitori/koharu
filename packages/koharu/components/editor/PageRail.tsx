@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { observeElementRect, useVirtualizer } from '@tanstack/react-virtual'
 import {
+  Bot,
   FilePlus2,
   FolderOpen,
   LoaderCircle,
@@ -467,6 +468,13 @@ function PageItem({
   onDrop: () => void
 }) {
   const { t } = useTranslation()
+  const jobs = useKoharuStore((state) => state.jobs)
+  const agentPageActivity = useKoharuStore((state) => state.agentPageActivity)
+  const activeJob = useMemo(
+    () => Object.values(jobs).find((job) => job.page === page.id && job.state === 'running'),
+    [jobs, page.id],
+  )
+  const agentAction = agentPageActivity[page.id]
 
   return (
     <article
@@ -497,11 +505,14 @@ function PageItem({
         onDrop()
       }}
     >
-      <div className='grid h-16 w-12 place-items-center overflow-hidden rounded-lg bg-[var(--surface-well)]'>
+      <div className='relative grid h-16 w-12 place-items-center overflow-hidden rounded-lg bg-[var(--surface-well)]'>
         {page.source_asset ? (
           <PageThumbnail page={page.id} asset={page.source_asset} label={page.label} />
         ) : (
           <span className='text-[9px] text-muted-foreground'>{t('navigator.noImage')}</span>
+        )}
+        {(activeJob || agentAction) && (
+          <div className='pointer-events-none absolute inset-0 rounded-lg ring-2 ring-primary/70 animate-pulse' />
         )}
       </div>
       <div className='min-w-0 py-0.5'>
@@ -532,9 +543,26 @@ function PageItem({
         <p className='mt-1 text-[9px] leading-3.5 text-muted-foreground'>
           {t('navigator.layerCount', { count: page.layer_count })}
         </p>
-        <p className='mt-1 text-[9px] text-muted-foreground tabular-nums'>
-          {page.size.width} × {page.size.height}
-        </p>
+        {activeJob || agentAction ? (
+          <div className='mt-1 flex items-center gap-1 overflow-hidden text-[9px] font-medium text-primary'>
+            {activeJob ? (
+              <LoaderCircle className='size-2.5 shrink-0 animate-spin text-primary' />
+            ) : (
+              <Bot className='size-2.5 shrink-0 text-primary animate-pulse' />
+            )}
+            <span className='truncate'>
+              {activeJob
+                ? activeJob.stage
+                  ? t(`phase.${activeJob.stage}`, { defaultValue: activeJob.stage })
+                  : t('activity.processing')
+                : agentAction}
+            </span>
+          </div>
+        ) : (
+          <p className='mt-1 text-[9px] text-muted-foreground tabular-nums'>
+            {page.size.width} × {page.size.height}
+          </p>
+        )}
       </div>
     </article>
   )

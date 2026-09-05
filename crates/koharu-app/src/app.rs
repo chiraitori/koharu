@@ -136,6 +136,17 @@ pub fn run(context: tauri::Context<Cef>) -> Result<()> {
             let handle = application.handle().clone();
             application.manage(koharu_desktop::Desktop::new()?);
             application.manage(AgentState::new(handle.clone())?);
+            application.manage(crate::mcp::McpServerState::new(handle.clone()));
+
+            let mcp_handle = handle.clone();
+            drop(tauri::async_runtime::spawn(async move {
+                if let Ok(preferences) = crate::commands::preferences::Preferences::load() {
+                    let mcp_state = mcp_handle.state::<crate::mcp::McpServerState>();
+                    if let Err(e) = mcp_state.update(&preferences.mcp).await {
+                        tracing::error!(error = %e, "failed to start MCP server on startup");
+                    }
+                }
+            }));
 
             let window_config = application
                 .config()
@@ -266,6 +277,8 @@ pub fn run(context: tauri::Context<Cef>) -> Result<()> {
                 processing.stops.lock().clear();
                 processing.jobs.lock().clear();
                 window.state::<AgentState>().cancel_all();
+                let mcp_state = window.state::<crate::mcp::McpServerState>();
+                tauri::async_runtime::block_on(mcp_state.stop());
             }
             if matches!(event, WindowEvent::Destroyed) {
                 tracing::info!(

@@ -137,6 +137,10 @@ const preferences: Preferences = {
   typesetting: {
     font_families: ['Noto Sans'],
   },
+  mcp: {
+    enabled: false,
+    port: 9999,
+  },
   languages: [
     { tag: 'en-US', name: 'English' },
     { tag: 'ja-JP', name: 'Japanese' },
@@ -883,6 +887,7 @@ describe('greenfield editor', () => {
         nextPreferences.pipeline,
         preferences.providers,
         preferences.typesetting,
+        preferences.mcp,
       ),
     )
     expect(
@@ -906,11 +911,12 @@ describe('greenfield editor', () => {
     const user = userEvent.setup()
     const save = vi
       .spyOn(commands, 'savePreferences')
-      .mockImplementation(async (pipeline, providers, typesetting) => ({
+      .mockImplementation(async (pipeline, providers, typesetting, mcp) => ({
         ...preferences,
         pipeline,
         providers,
         typesetting,
+        mcp: mcp ?? preferences.mcp,
       }))
     render(
       <ThemeProvider attribute='class'>
@@ -1004,6 +1010,7 @@ describe('greenfield editor', () => {
         nextPreferences.pipeline,
         currentPreferences.providers,
         currentPreferences.typesetting,
+        currentPreferences.mcp,
       ),
     )
     expect(useKoharuStore.getState().preferences?.pipeline.translation).toEqual(
@@ -1059,6 +1066,7 @@ describe('greenfield editor', () => {
         nextPreferences.pipeline,
         preferences.providers,
         preferences.typesetting,
+        preferences.mcp,
       ),
     )
     expect(useKoharuStore.getState().preferences?.pipeline.translation).toEqual(
@@ -1123,6 +1131,7 @@ describe('greenfield editor', () => {
         }),
         preferences.providers,
         preferences.typesetting,
+        preferences.mcp,
       ),
     )
     fireEvent.click(screen.getByRole('button', { name: 'Providers' }))
@@ -1151,6 +1160,7 @@ describe('greenfield editor', () => {
         }),
         preferences.providers,
         preferences.typesetting,
+        preferences.mcp,
       ),
     )
     const vision = screen.getByRole('switch', { name: 'Vision' })
@@ -1167,6 +1177,7 @@ describe('greenfield editor', () => {
         }),
         preferences.providers,
         preferences.typesetting,
+        preferences.mcp,
       ),
     )
     expect(screen.getByLabelText('Translation model')).toHaveTextContent('Gemma 4 E2B Instruct')
@@ -1249,6 +1260,7 @@ describe('greenfield editor', () => {
         }),
         configured.providers,
         configured.typesetting,
+        configured.mcp,
       ),
     )
   })
@@ -1302,7 +1314,7 @@ describe('greenfield editor', () => {
     useKoharuStore.setState({ settingsOpen: true })
     const save = vi
       .spyOn(commands, 'savePreferences')
-      .mockImplementation(async (pipeline, providers, typesetting) => ({
+      .mockImplementation(async (pipeline, providers, typesetting, mcp) => ({
         ...preferences,
         pipeline,
         providers: {
@@ -1314,6 +1326,7 @@ describe('greenfield editor', () => {
           })),
         },
         typesetting,
+        mcp: mcp ?? preferences.mcp,
       }))
     render(
       <ThemeProvider attribute='class'>
@@ -1356,6 +1369,7 @@ describe('greenfield editor', () => {
         }),
         preferences.providers,
         preferences.typesetting,
+        preferences.mcp,
       ),
     )
   })
@@ -1399,8 +1413,8 @@ describe('greenfield editor', () => {
     let invocation = 0
     const save = vi
       .spyOn(commands, 'savePreferences')
-      .mockImplementation(async (pipeline, providers, typesetting) => {
-        const saved = { ...configured, pipeline, providers, typesetting }
+      .mockImplementation(async (pipeline, providers, typesetting, mcp) => {
+        const saved = { ...configured, pipeline, providers, typesetting, mcp: mcp ?? configured.mcp }
         if (invocation++ === 0) {
           firstResult = saved
           return first
@@ -1484,11 +1498,12 @@ describe('greenfield editor', () => {
     ])
     const save = vi
       .spyOn(commands, 'savePreferences')
-      .mockImplementation(async (pipeline, providers, typesetting) => ({
+      .mockImplementation(async (pipeline, providers, typesetting, mcp) => ({
         ...preferences,
         pipeline,
         providers,
         typesetting,
+        mcp: mcp ?? preferences.mcp,
       }))
     render(
       <ThemeProvider attribute='class'>
@@ -1502,15 +1517,25 @@ describe('greenfield editor', () => {
     await user.click(await screen.findByRole('option', { name: 'Arial, System' }))
 
     await waitFor(() =>
-      expect(save).toHaveBeenLastCalledWith(preferences.pipeline, preferences.providers, {
-        font_families: ['Noto Sans', 'Arial'],
-      }),
+      expect(save).toHaveBeenLastCalledWith(
+        preferences.pipeline,
+        preferences.providers,
+        {
+          font_families: ['Noto Sans', 'Arial'],
+        },
+        preferences.mcp,
+      ),
     )
     await user.click(screen.getByRole('button', { name: 'Remove Noto Sans' }))
     await waitFor(() =>
-      expect(save).toHaveBeenLastCalledWith(preferences.pipeline, preferences.providers, {
-        font_families: ['Arial'],
-      }),
+      expect(save).toHaveBeenLastCalledWith(
+        preferences.pipeline,
+        preferences.providers,
+        {
+          font_families: ['Arial'],
+        },
+        preferences.mcp,
+      ),
     )
   })
 

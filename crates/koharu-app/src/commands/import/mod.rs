@@ -16,7 +16,7 @@ mod zip;
 
 #[derive(Clone, Copy, EnumIter, EnumMessage, EnumString)]
 #[strum(ascii_case_insensitive)]
-pub(super) enum Format {
+pub(crate) enum Format {
     #[strum(
         serialize = "png",
         serialize = "jpg",
@@ -38,12 +38,12 @@ pub(super) struct EncodedPage {
     pub(super) bytes: Vec<u8>,
 }
 
-pub(super) struct Page {
-    pub(super) name: String,
-    pub(super) bytes: Arc<[u8]>,
-    pub(super) format: ImageFormat,
-    pub(super) width: u32,
-    pub(super) height: u32,
+pub(crate) struct Page {
+    pub(crate) name: String,
+    pub(crate) bytes: Arc<[u8]>,
+    pub(crate) format: ImageFormat,
+    pub(crate) width: u32,
+    pub(crate) height: u32,
 }
 
 fn decode(path: &Path, source: EncodedPage) -> Result<Page> {
@@ -71,7 +71,7 @@ fn decode(path: &Path, source: EncodedPage) -> Result<Page> {
     })
 }
 
-pub(super) fn import(mut paths: Vec<PathBuf>) -> Result<Vec<Page>> {
+pub(crate) fn import(mut paths: Vec<PathBuf>) -> Result<Vec<Page>> {
     alphanumeric_sort::sort_slice_by_os_str_key(&mut paths, |path| {
         path.file_name().unwrap_or_else(|| path.as_os_str())
     });

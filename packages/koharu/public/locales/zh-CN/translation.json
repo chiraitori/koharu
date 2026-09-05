@@ -50,7 +50,19 @@
     "signingIn": "正在等待登录…",
     "thinking": "正在思考…",
     "title": "智能体",
-    "working": "正在工作…"
+    "working": "正在工作…",
+    "tools": {
+      "addTextBox": "正在添加文本框…",
+      "deleteElements": "正在删除元素…",
+      "importImages": "正在导入图像…",
+      "inspectProject": "正在检查项目…",
+      "runPipeline": "正在运行处理管线…",
+      "setGeometry": "正在更新位置…",
+      "setSourceText": "正在更新原文…",
+      "setTranslation": "正在更新译文…",
+      "setTypography": "正在更新排版样式…",
+      "viewPage": "正在查看页面…"
+    }
   },
   "canvas": {
     "empty": "请选择页面以开始。",
@@ -209,7 +221,8 @@
     "ru-RU": "Русский",
     "tr-TR": "Türkçe",
     "zh-CN": "简体中文",
-    "zh-TW": "繁體中文"
+    "zh-TW": "繁體中文",
+    "vi-VN": "Tiếng Việt"
   },
   "layers": {
     "delete": "删除 {{name}}",
@@ -429,7 +442,8 @@
       "providers": "提供商",
       "shortcuts": "快捷键",
       "translation": "译文",
-      "typesetting": "排版"
+      "typesetting": "排版",
+      "mcp": "MCP"
     },
     "title": "设置",
     "translation": {
@@ -461,6 +475,25 @@
       "loadingFonts": "正在加载字体…",
       "removeFamily": "删除 {{family}}",
       "title": "排版"
+    },
+    "mcp": {
+      "active": "Running",
+      "clientsDesc": "Add one of these configurations to your preferred AI assistant to connect it to Koharu.",
+      "clientsTitle": "Client Setup & Snippets",
+      "description": "Expose Koharu tools over local Streamable HTTP / SSE for AI client automation (Google Antigravity, Claude Desktop, Cursor, OpenCode).",
+      "enableDesc": "Runs an embedded MCP server listening on localhost.",
+      "enableTitle": "Enable MCP Server",
+      "endpointDesc": "Standard HTTP/SSE endpoint for clients.",
+      "endpointTitle": "Endpoint URL",
+      "inactive": "Disabled",
+      "portDesc": "Local TCP port for the MCP endpoint (default: 9999).",
+      "portLabel": "Port",
+      "portTitle": "Server Port",
+      "service": "Server Configuration",
+      "serviceDesc": "Enable the built-in MCP server to let external AI models inspect, translate, and automate your manga projects.",
+      "title": "Model Context Protocol (MCP)",
+      "toolsDesc": "Tools exposed to connected AI models for end-to-end translation and scene editing.",
+      "toolsTitle": "Available Automation Tools"
     }
   },
   "start": {

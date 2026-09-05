@@ -50,7 +50,19 @@
     "signingIn": "Oturum açma bekleniyor…",
     "thinking": "Düşünüyor…",
     "title": "Ajan",
-    "working": "Çalışıyor…"
+    "working": "Çalışıyor…",
+    "tools": {
+      "addTextBox": "Metin kutusu ekleniyor…",
+      "deleteElements": "Öğeler siliniyor…",
+      "importImages": "Görüntüler içe aktarılıyor…",
+      "inspectProject": "Proje inceleniyor…",
+      "runPipeline": "İşlem hattı çalıştırılıyor…",
+      "setGeometry": "Konum güncelleniyor…",
+      "setSourceText": "Kaynak metin güncelleniyor…",
+      "setTranslation": "Çeviri güncelleniyor…",
+      "setTypography": "Tipografi güncelleniyor…",
+      "viewPage": "Sayfa görüntüleniyor…"
+    }
   },
   "canvas": {
     "empty": "Başlamak için bir sayfa seçin.",
@@ -209,7 +221,8 @@
     "ru-RU": "Русский",
     "tr-TR": "Türkçe",
     "zh-CN": "简体中文",
-    "zh-TW": "繁體中文"
+    "zh-TW": "繁體中文",
+    "vi-VN": "Tiếng Việt"
   },
   "layers": {
     "delete": "{{name}} öğesini sil",
@@ -429,7 +442,8 @@
       "providers": "Sağlayıcılar",
       "shortcuts": "Kısayollar",
       "translation": "Çeviri",
-      "typesetting": "Dizgi"
+      "typesetting": "Dizgi",
+      "mcp": "MCP"
     },
     "title": "Ayarlar",
     "translation": {
@@ -461,6 +475,25 @@
       "loadingFonts": "Yazı tipleri yükleniyor…",
       "removeFamily": "{{family}} ailesini kaldır",
       "title": "Dizgi"
+    },
+    "mcp": {
+      "active": "Running",
+      "clientsDesc": "Add one of these configurations to your preferred AI assistant to connect it to Koharu.",
+      "clientsTitle": "Client Setup & Snippets",
+      "description": "Expose Koharu tools over local Streamable HTTP / SSE for AI client automation (Google Antigravity, Claude Desktop, Cursor, OpenCode).",
+      "enableDesc": "Runs an embedded MCP server listening on localhost.",
+      "enableTitle": "Enable MCP Server",
+      "endpointDesc": "Standard HTTP/SSE endpoint for clients.",
+      "endpointTitle": "Endpoint URL",
+      "inactive": "Disabled",
+      "portDesc": "Local TCP port for the MCP endpoint (default: 9999).",
+      "portLabel": "Port",
+      "portTitle": "Server Port",
+      "service": "Server Configuration",
+      "serviceDesc": "Enable the built-in MCP server to let external AI models inspect, translate, and automate your manga projects.",
+      "title": "Model Context Protocol (MCP)",
+      "toolsDesc": "Tools exposed to connected AI models for end-to-end translation and scene editing.",
+      "toolsTitle": "Available Automation Tools"
     }
   },
   "start": {

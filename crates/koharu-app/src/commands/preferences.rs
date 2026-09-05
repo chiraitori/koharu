@@ -10,11 +10,27 @@ use specta::Type;
 
 use super::Error;
 
+#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+pub struct McpConfig {
+    pub enabled: bool,
+    pub port: u16,
+}
+
+impl Default for McpConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            port: 9999,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Type)]
 pub struct Preferences {
     pub pipeline: PipelineConfig,
     pub providers: ProviderPreferences,
     pub typesetting: TypesettingConfig,
+    pub mcp: McpConfig,
     pub languages: Vec<LanguageChoice>,
 }
 
@@ -23,13 +39,16 @@ impl Preferences {
         let pipeline = PipelineConfig::load()?;
         let providers = ProvidersConfig::load()?;
         let typesetting = TypesettingConfig::load()?;
+        let mcp = koharu_config::load::<McpConfig>("mcp")?;
         let pipeline = pipeline.read()?;
         let providers = providers.read()?;
         let typesetting = typesetting.read()?;
+        let mcp = mcp.read()?.clone();
         Ok(Self {
             pipeline: pipeline.clone(),
             providers: ProviderPreferences::from_config(&providers)?,
             typesetting: typesetting.clone(),
+            mcp,
             languages: Language::ALL
                 .iter()
                 .map(|language| LanguageChoice {
@@ -160,12 +179,15 @@ pub(crate) async fn save_preferences(
     mut pipeline: PipelineConfig,
     providers: ProviderPreferences,
     typesetting: TypesettingConfig,
+    mcp: McpConfig,
+    handle: tauri::AppHandle<tauri::Cef>,
 ) -> std::result::Result<Preferences, Error> {
     remember_pipeline_profiles(&mut pipeline);
     let providers = providers.into_config()?;
     let pipeline_config = PipelineConfig::load()?;
     let providers_config = ProvidersConfig::load()?;
     let typesetting_config = TypesettingConfig::load()?;
+    let mcp_config = koharu_config::load::<McpConfig>("mcp")?;
     {
         let mut current = pipeline_config.write()?;
         *current = pipeline;
@@ -181,6 +203,15 @@ pub(crate) async fn save_preferences(
         *current = typesetting;
         current.save()?;
     }
+    {
+        let mut current = mcp_config.write()?;
+        *current = mcp.clone();
+        current.save()?;
+    }
+    use tauri::Manager as _;
+    let mcp_state = handle.state::<crate::mcp::McpServerState>();
+    mcp_state.update(&mcp).await?;
+
     let preferences = Preferences::load()?;
     tracing::info!(
         target: "koharu_metrics",

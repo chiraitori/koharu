@@ -12,11 +12,13 @@ import koKR from '@/public/locales/ko-KR/translation.json'
 import ptBR from '@/public/locales/pt-BR/translation.json'
 import ruRU from '@/public/locales/ru-RU/translation.json'
 import trTR from '@/public/locales/tr-TR/translation.json'
+import viVN from '@/public/locales/vi-VN/translation.json'
 import zhCN from '@/public/locales/zh-CN/translation.json'
 import zhTW from '@/public/locales/zh-TW/translation.json'
 
 export const resources = {
   'en-US': { translation: enUS },
+  'vi-VN': { translation: viVN },
   'zh-CN': { translation: zhCN },
   'zh-TW': { translation: zhTW },
   'ja-JP': { translation: jaJP },

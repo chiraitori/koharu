@@ -49,6 +49,10 @@ const preferences: Preferences = {
   typesetting: {
     font_families: ['CCWildWords', 'Adobe 黑体 Std'],
   },
+  mcp: {
+    enabled: false,
+    port: 9999,
+  },
   languages: [],
 }
 
