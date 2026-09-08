@@ -22,28 +22,28 @@ import { Switch } from '@koharu/ui/components/switch'
 
 const TOOLS_SUMMARY = [
   {
-    name: 'import_images',
-    desc: 'Import manga image files, directories, ZIP/CBZ archives, or PDF files into the project.',
+    name: 'inspect_project',
+    desc: 'Read the latest semantic state of the open project: pages, layers, translations, fonts, pipeline settings.',
   },
   {
     name: 'view_page',
-    desc: 'Render and return a page image (Base64 PNG) for Multimodal Vision reading & context analysis.',
+    desc: 'Render and return a page image (Base64 WebP) for visual inspection and bubble localization.',
+  },
+  {
+    name: 'import_images',
+    desc: 'Import image files, directories, ZIP/CBZ/RAR archives, or PDF files into the project.',
   },
   {
     name: 'run_pipeline',
-    desc: 'Trigger processing stages (detect, OCR, translation, inpainting, rendering).',
-  },
-  {
-    name: 'inspect_project',
-    desc: 'Read the full semantic project tree including text blocks, coordinates, translations, and styles.',
+    desc: 'Trigger processing stages (detect, OCR, translation, inpainting) for the project, pages, or elements.',
   },
   {
     name: 'set_translation',
-    desc: 'Update translated text in speech bubbles directly.',
+    desc: 'Update translated text in speech bubbles directly, or pass null to clear it.',
   },
   {
     name: 'set_source_text',
-    desc: 'Correct recognized source Japanese text.',
+    desc: 'Correct recognized source (OCR) text.',
   },
   {
     name: 'add_text_box',
@@ -51,11 +51,91 @@ const TOOLS_SUMMARY = [
   },
   {
     name: 'set_typography',
-    desc: 'Customize font family, font size, alignment, and colors.',
+    desc: 'Customize font family, size, weight, style, alignment, and colors.',
   },
   {
-    name: 'open_project / export_pages',
-    desc: 'Open existing projects and export finished pages to image or PSD format.',
+    name: 'set_geometry',
+    desc: 'Replace an element\u2019s page-space polygon geometry points.',
+  },
+  {
+    name: 'set_visibility',
+    desc: 'Change visibility and/or opacity for one or more elements.',
+  },
+  {
+    name: 'delete_elements',
+    desc: 'Delete elements and their descendants from the scene.',
+  },
+  {
+    name: 'rename_page',
+    desc: 'Rename a project page.',
+  },
+  {
+    name: 'move_page',
+    desc: 'Move a page to a new zero-based index in the page list.',
+  },
+  {
+    name: 'delete_pages',
+    desc: 'Delete pages and their contents from the project.',
+  },
+  {
+    name: 'open_project',
+    desc: 'Open an existing project from the library by name.',
+  },
+  {
+    name: 'create_project',
+    desc: 'Create and open a new empty project in the library.',
+  },
+  {
+    name: 'list_projects',
+    desc: 'List all projects in the library.',
+  },
+  {
+    name: 'move_element',
+    desc: 'Move an element under a page or element at a zero-based index.',
+  },
+  {
+    name: 'undo / redo',
+    desc: 'Undo or redo the last action in the active project.',
+  },
+  {
+    name: 'select_page',
+    desc: 'Select the active page by entity ID.',
+  },
+  {
+    name: 'close_project / delete_project',
+    desc: 'Close the open project, or permanently delete a project by name.',
+  },
+  {
+    name: 'export_pages',
+    desc: 'Export pages to PNG or PSD files in an existing directory.',
+  },
+  {
+    name: 'add_point_text',
+    desc: 'Add point text on the active page at x/y in page space.',
+  },
+  {
+    name: 'commit_paint / commit_erase',
+    desc: 'Paint a raster stroke (creates a layer when omitted) or erase part of a paint layer.',
+  },
+  {
+    name: 'commit_transform',
+    desc: 'Move, resize, or rotate text elements by giving new frames in page space.',
+  },
+  {
+    name: 'request_inpaint',
+    desc: 'Run inpainting for a brushed region on a page. Returns the pipeline job ID.',
+  },
+  {
+    name: 'stop_processing',
+    desc: 'Stop all running pipeline jobs.',
+  },
+  {
+    name: 'get_fonts / get_translation_models / get_preferences',
+    desc: 'List available fonts, translation models, and current preferences.',
+  },
+  {
+    name: 'get_page_thumbnail',
+    desc: 'Get a small WebP thumbnail of a page source image.',
   },
 ]
 
