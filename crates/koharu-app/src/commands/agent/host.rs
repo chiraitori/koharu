@@ -1,11 +1,17 @@
-use std::{future::Future, pin::Pin, sync::OnceLock};
+use std::{
+    future::Future,
+    pin::Pin,
+    sync::{Arc, OnceLock},
+};
 
 use anyhow::{Context as _, Result, anyhow, bail};
 use async_trait::async_trait;
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use koharu_agent::{Control, Host, Invocation, Tool, ToolCall};
 use koharu_desktop::{Desktop, Frame};
-use koharu_pipeline::{Committer, Operation, RunStatus, Scope, Stage, StageOutput, StopToken};
+use koharu_pipeline::{
+    Committer, Operation, Progress, RunStatus, Scope, Stage, StageOutput, StopToken,
+};
 use koharu_scene::{Commit, EntityId, Snapshot};
 use schemars::{JsonSchema, schema_for};
 use serde::Deserialize;
@@ -16,9 +22,10 @@ use crate::commands::{
     ChannelExt as _,
     canvas::{CanvasChannel, Point},
     editing::{GeometryUpdate, TypographyUpdate},
+    lifecycle::{AgentActivityGuard, ProjectChannel},
     output,
     preferences::Preferences,
-    processing::{JobId, Processing},
+    processing::{Job, JobChannel, JobId, JobState, Processing},
     project::{CurrentProject, Project, Typography},
 };
 
@@ -112,7 +119,130 @@ impl KoharuHost {
         desktop.synchronize(&commit.snapshot, page, &commit).await?;
         let canvas = desktop.canvas_state();
         self.handle.state::<CanvasChannel>().channel.publish(canvas);
+        if let Some(info) = self
+            .handle
+            .state::<CurrentProject>()
+            .project
+            .lock()
+            .await
+            .as_ref()
+            .map(Project::info)
+        {
+            self.handle
+                .state::<ProjectChannel>()
+                .channel
+                .publish(Some(info));
+        }
         Ok(())
+    }
+
+    pub(crate) async fn containing_page(&self, entity: EntityId) -> Option<EntityId> {
+        let current = self.handle.state::<CurrentProject>();
+        let current = current.project.lock().await;
+        let project = current.as_ref()?;
+        let snapshot = project.snapshot();
+        let mut current_id = entity;
+        loop {
+            if snapshot.page(current_id).is_ok() {
+                return Some(current_id);
+            }
+            match snapshot.parent(current_id) {
+                Ok(Some(parent)) => current_id = parent,
+                _ => return None,
+            }
+        }
+    }
+
+    async fn resolve_target_page(&self, name: &str, call: &ToolCall) -> Option<EntityId> {
+        match name {
+            "view_page" => {
+                let args: Option<ViewPage> = serde_json::from_str(&call.arguments).ok();
+                args.and_then(|a| entity(&a.page).ok())
+            }
+            "rename_page" => {
+                let args: Option<RenamePage> = serde_json::from_str(&call.arguments).ok();
+                args.and_then(|a| entity(&a.page).ok())
+            }
+            "move_page" => {
+                let args: Option<MovePage> = serde_json::from_str(&call.arguments).ok();
+                args.and_then(|a| entity(&a.page).ok())
+            }
+            "delete_pages" => {
+                let args: Option<DeletePages> = serde_json::from_str(&call.arguments).ok();
+                args.and_then(|a| a.pages.first().and_then(|p| entity(p).ok()))
+            }
+            "add_text_box" => {
+                let args: Option<AddTextBox> = serde_json::from_str(&call.arguments).ok();
+                args.and_then(|a| entity(&a.page).ok())
+            }
+            "set_source_text" => {
+                let args: Option<SetText> = serde_json::from_str(&call.arguments).ok();
+                if let Some(a) = args.and_then(|a| entity(&a.element).ok()) {
+                    self.containing_page(a).await
+                } else {
+                    None
+                }
+            }
+            "set_translation" => {
+                let args: Option<SetTranslation> = serde_json::from_str(&call.arguments).ok();
+                if let Some(a) = args.and_then(|a| entity(&a.element).ok()) {
+                    self.containing_page(a).await
+                } else {
+                    None
+                }
+            }
+            "set_typography" => {
+                let args: Option<SetTypography> = serde_json::from_str(&call.arguments).ok();
+                if let Some(a) = args.and_then(|a| entity(&a.element).ok()) {
+                    self.containing_page(a).await
+                } else {
+                    None
+                }
+            }
+            "set_geometry" => {
+                let args: Option<SetGeometry> = serde_json::from_str(&call.arguments).ok();
+                if let Some(a) = args.and_then(|a| entity(&a.element).ok()) {
+                    self.containing_page(a).await
+                } else {
+                    None
+                }
+            }
+            "set_visibility" => {
+                let args: Option<SetVisibility> = serde_json::from_str(&call.arguments).ok();
+                if let Some(a) = args.and_then(|a| a.elements.first().and_then(|e| entity(e).ok())) {
+                    self.containing_page(a).await
+                } else {
+                    None
+                }
+            }
+            "delete_elements" => {
+                let args: Option<DeleteElements> = serde_json::from_str(&call.arguments).ok();
+                if let Some(a) = args.and_then(|a| a.elements.first().and_then(|e| entity(e).ok())) {
+                    self.containing_page(a).await
+                } else {
+                    None
+                }
+            }
+            "move_element" => {
+                let args: Option<MoveElement> = serde_json::from_str(&call.arguments).ok();
+                if let Some(a) = args.and_then(|a| entity(&a.element).ok()) {
+                    self.containing_page(a).await
+                } else {
+                    None
+                }
+            }
+            "run_pipeline" => {
+                let args: Option<RunPipeline> = serde_json::from_str(&call.arguments).ok();
+                args.and_then(|a| {
+                    if a.pages.len() == 1 {
+                        entity(&a.pages[0]).ok()
+                    } else {
+                        None
+                    }
+                })
+            }
+            _ => None,
+        }
     }
 
     async fn run_pipeline(&self, arguments: RunPipeline, control: &Control) -> Result<Invocation> {
@@ -138,6 +268,67 @@ impl KoharuHost {
             stops.insert(job, stop.clone());
         }
 
+        let initial_job = Job {
+            id: job,
+            state: JobState::Running,
+            completed: 0,
+            total: 0,
+            page: None,
+            stage: None,
+            model: None,
+            error: None,
+        };
+        self.handle
+            .state::<Processing>()
+            .jobs
+            .lock()
+            .insert(job, initial_job.clone());
+        self.handle.state::<JobChannel>().channel.publish(initial_job);
+
+        let progress = Arc::new(parking_lot::Mutex::new((0_usize, 0_usize)));
+        let progress_handle = self.handle.clone();
+        let progress_callback = Arc::new(move |event: Progress| {
+            let update = match event {
+                Progress::Started { pages, stages } => {
+                    let mut progress = progress.lock();
+                    *progress = (0, pages.len().saturating_mul(stages.len()));
+                    Some((0, progress.1, None, None, None))
+                }
+                Progress::Loading { page, stage, model } => {
+                    let progress = progress.lock();
+                    Some((progress.0, progress.1, Some(page), Some(stage), Some(model)))
+                }
+                Progress::Finished { page, stage, model, .. } => {
+                    let mut progress = progress.lock();
+                    progress.0 = progress.0.saturating_add(1).min(progress.1);
+                    Some((progress.0, progress.1, Some(page), Some(stage), Some(model)))
+                }
+                Progress::Skipped { page, stage } => {
+                    let mut progress = progress.lock();
+                    progress.0 = progress.0.saturating_add(1).min(progress.1);
+                    Some((progress.0, progress.1, Some(page), Some(stage), None))
+                }
+                Progress::Running { .. } => None,
+            };
+            if let Some((completed, total, page, stage, model)) = update {
+                let job_update = {
+                    let processing = progress_handle.state::<Processing>();
+                    let mut jobs = processing.jobs.lock();
+                    jobs.get_mut(&job).map(|j| {
+                        j.completed = completed;
+                        j.total = total;
+                        j.page = page;
+                        j.stage = stage;
+                        j.model = model;
+                        j.clone()
+                    })
+                };
+                if let Some(j) = job_update {
+                    progress_handle.state::<JobChannel>().channel.publish(j);
+                }
+            }
+        });
+
         let watcher = tauri::async_runtime::spawn({
             let control = control.clone();
             let stop = stop.clone();
@@ -151,7 +342,7 @@ impl KoharuHost {
             operation,
             scope,
             stop,
-            progress: None,
+            progress: Some(progress_callback),
             inpainting_mask: None,
         };
         let result = self
@@ -161,6 +352,34 @@ impl KoharuHost {
             .await;
         watcher.abort();
         self.handle.state::<Processing>().stops.lock().remove(&job);
+
+        let stopped = result
+            .as_ref()
+            .map(|report| report.status == RunStatus::Stopped)
+            .unwrap_or(false);
+        let error = result.as_ref().err().map(|e| format!("{e:#}"));
+
+        let finalized_job = self
+            .handle
+            .state::<Processing>()
+            .jobs
+            .lock()
+            .remove(&job)
+            .map(|mut j| {
+                j.state = if stopped {
+                    JobState::Stopped
+                } else if error.is_some() {
+                    JobState::Failed
+                } else {
+                    JobState::Finished
+                };
+                j.error = error;
+                j
+            });
+        if let Some(j) = finalized_job {
+            self.handle.state::<JobChannel>().channel.publish(j);
+        }
+
         let report = result.map_err(|error| anyhow!(error))?;
         if report.status == RunStatus::Stopped {
             bail!("pipeline processing was cancelled");
@@ -236,6 +455,10 @@ impl Host for KoharuHost {
         fields(tool = call.name.as_str()),
     )]
     async fn invoke(&self, call: ToolCall, control: &Control) -> Result<Invocation> {
+        let name = call.name.clone();
+        let target_page = self.resolve_target_page(&name, &call).await;
+        let _guard = AgentActivityGuard::new(self.handle.clone(), target_page, &name);
+
         match call.name.as_str() {
             "inspect_project" => {
                 let _: InspectProject = arguments(&call)?;

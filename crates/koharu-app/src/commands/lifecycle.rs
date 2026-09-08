@@ -109,6 +109,47 @@ pub(crate) struct ResourceChannel {
     pub(crate) channel: Mutex<Option<Channel<ModelResources>>>,
 }
 
+#[derive(Clone, Debug, Serialize, Type)]
+pub struct AgentActivity {
+    pub page: Option<koharu_scene::EntityId>,
+    pub action: Option<String>,
+}
+
+#[derive(Default)]
+pub(crate) struct AgentActivityChannel {
+    pub(crate) channel: Mutex<Option<Channel<AgentActivity>>>,
+}
+
+pub(crate) struct AgentActivityGuard {
+    handle: AppHandle<Cef>,
+    page: Option<koharu_scene::EntityId>,
+}
+
+impl AgentActivityGuard {
+    pub fn new(handle: AppHandle<Cef>, page: Option<koharu_scene::EntityId>, action: &str) -> Self {
+        handle
+            .state::<AgentActivityChannel>()
+            .channel
+            .publish(AgentActivity {
+                page,
+                action: Some(action.to_owned()),
+            });
+        Self { handle, page }
+    }
+}
+
+impl Drop for AgentActivityGuard {
+    fn drop(&mut self) {
+        self.handle
+            .state::<AgentActivityChannel>()
+            .channel
+            .publish(AgentActivity {
+                page: self.page,
+                action: None,
+            });
+    }
+}
+
 #[derive(Default)]
 pub(crate) struct ProjectChannel {
     pub(crate) channel: Mutex<Option<Channel<Option<ProjectInfo>>>>,
@@ -155,6 +196,7 @@ pub(crate) async fn subscribe(
     on_download: Channel<Download>,
     on_resources: Channel<ModelResources>,
     on_project: Channel<Option<ProjectInfo>>,
+    on_agent_activity: Channel<AgentActivity>,
 ) -> std::result::Result<StartupState, Error> {
     handle.state::<Initialization>().wait().await?;
 
@@ -163,6 +205,7 @@ pub(crate) async fn subscribe(
     *handle.state::<DownloadChannel>().channel.lock() = Some(on_download);
     *handle.state::<ResourceChannel>().channel.lock() = Some(on_resources);
     *handle.state::<ProjectChannel>().channel.lock() = Some(on_project);
+    *handle.state::<AgentActivityChannel>().channel.lock() = Some(on_agent_activity);
 
     let canvas = handle.state::<Desktop>().canvas_state();
     let preferences = Preferences::load()?;
@@ -492,4 +535,23 @@ pub(crate) async fn select_page(
         project: project_info,
         page: selected_page,
     })
+}
+
+#[tracing::instrument(
+    target = "koharu_metrics",
+    name = "download_canceled",
+    skip_all,
+    fields(download_id = id)
+)]
+#[tauri::command]
+#[specta::specta]
+pub(crate) async fn cancel_download(id: f64) -> std::result::Result<bool, Error> {
+    Ok(koharu_runtime::download::cancel(id as u64))
+}
+
+#[tracing::instrument(target = "koharu_metrics", name = "all_downloads_canceled", skip_all)]
+#[tauri::command]
+#[specta::specta]
+pub(crate) async fn cancel_all_downloads() -> std::result::Result<u32, Error> {
+    Ok(koharu_runtime::download::cancel_all() as u32)
 }

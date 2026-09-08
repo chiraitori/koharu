@@ -74,6 +74,8 @@ pub fn bindings() -> tauri_specta::Builder<tauri::Cef> {
             lifecycle::close_project,
             lifecycle::import_pages,
             lifecycle::select_page,
+            lifecycle::cancel_download,
+            lifecycle::cancel_all_downloads,
             editing::rename_page,
             editing::delete_pages,
             editing::move_page,

@@ -1,10 +1,11 @@
 //! File downloads and progress events.
 
 use std::{
+    collections::HashMap,
     future::Future,
     path::Path,
     sync::{
-        Arc, LazyLock, OnceLock,
+        Arc, LazyLock, Mutex, OnceLock,
         atomic::{AtomicU64, Ordering},
     },
     time::{Duration, Instant},
@@ -17,7 +18,7 @@ use reqwest::{StatusCode, header};
 use serde::{Deserialize, Serialize};
 use tokio::{
     io::{AsyncSeekExt, AsyncWriteExt, BufWriter},
-    sync::broadcast,
+    sync::{broadcast, watch},
 };
 
 use crate::network;
@@ -32,6 +33,8 @@ const WRITE_BUFFER_SIZE: usize = 256 * 1024;
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 static EVENTS: LazyLock<broadcast::Sender<Event>> =
     LazyLock::new(|| broadcast::channel(EVENT_CAPACITY).0);
+static CANCELLATIONS: LazyLock<Mutex<HashMap<u64, watch::Sender<bool>>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 type DownloadClient = Arc<reqwest_middleware::ClientWithMiddleware>;
 
 static CLIENT: OnceLock<DownloadClient> = OnceLock::new();
@@ -54,13 +57,17 @@ impl Chunk {
 }
 
 impl Activity {
-    fn start(name: String) -> Self {
+    fn start(name: String) -> (Self, watch::Receiver<bool>) {
         let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
+        let (tx, rx) = watch::channel(false);
+        if let Ok(mut map) = CANCELLATIONS.lock() {
+            map.insert(id, tx);
+        }
         let _ = EVENTS.send(Event::Started {
             id,
             name: name.clone(),
         });
-        Self { id, name }
+        (Self { id, name }, rx)
     }
 
     fn progress(&self, completed: u64, total: u64) {
@@ -73,6 +80,9 @@ impl Activity {
     }
 
     async fn finish(self, destination: &Path, result: Result<()>) -> Result<()> {
+        if let Ok(mut map) = CANCELLATIONS.lock() {
+            map.remove(&self.id);
+        }
         match result {
             Ok(()) => {
                 let _ = EVENTS.send(Event::Finished { id: self.id });
@@ -118,6 +128,29 @@ pub fn subscribe() -> broadcast::Receiver<Event> {
     EVENTS.subscribe()
 }
 
+pub fn cancel(id: u64) -> bool {
+    if let Ok(mut map) = CANCELLATIONS.lock() {
+        if let Some(tx) = map.remove(&id) {
+            let _ = tx.send(true);
+            return true;
+        }
+    }
+    false
+}
+
+pub fn cancel_all() -> usize {
+    if let Ok(mut map) = CANCELLATIONS.lock() {
+        let count = map.len();
+        for tx in map.values() {
+            let _ = tx.send(true);
+        }
+        map.clear();
+        count
+    } else {
+        0
+    }
+}
+
 fn client(http: reqwest::Client, max_retries: usize) -> DownloadClient {
     CLIENT
         .get_or_init(|| {
@@ -148,7 +181,7 @@ pub(crate) async fn fetch(url: &str, destination: &Path) -> Result<()> {
     let read_timeout = Duration::from_secs(config.read_timeout.max(1));
     let max_retries = config.max_retries as usize;
     let client = client(http, max_retries);
-    let activity = Activity::start(name);
+    let (activity, cancel_rx) = Activity::start(name);
     let result = fetch_http(
         &activity,
         &client,
@@ -156,6 +189,7 @@ pub(crate) async fn fetch(url: &str, destination: &Path) -> Result<()> {
         destination,
         read_timeout,
         max_retries,
+        cancel_rx,
     )
     .await;
     activity.finish(destination, result).await
@@ -169,7 +203,7 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     let read_timeout = Duration::from_secs(network::config()?.read_timeout.max(1));
-    let activity = Activity::start(name.to_owned());
+    let (activity, cancel_rx) = Activity::start(name.to_owned());
     let result = async {
         let (total, stream) = source.await?;
         write_stream(
@@ -178,6 +212,7 @@ where
             total.unwrap_or(0),
             read_timeout,
             stream,
+            &cancel_rx,
         )
         .await
     }
@@ -192,7 +227,11 @@ async fn fetch_http(
     destination: &Path,
     read_timeout: Duration,
     max_retries: usize,
+    cancel_rx: watch::Receiver<bool>,
 ) -> Result<()> {
+    if *cancel_rx.borrow() {
+        bail!("download cancelled");
+    }
     let response = tokio::time::timeout(
         read_timeout,
         client
@@ -225,6 +264,7 @@ async fn fetch_http(
             total,
             read_timeout,
             max_retries,
+            &cancel_rx,
         )
         .await;
     }
@@ -239,7 +279,8 @@ async fn fetch_http(
     }
     let response = response.error_for_status()?;
     drop(response);
-    (|| fetch_stream(activity, client, url, destination, read_timeout))
+    let cancel = cancel_rx.clone();
+    (|| fetch_stream(activity, client, url, destination, read_timeout, &cancel))
         .retry(backoff(max_retries))
         .when(retryable)
         .notify(|error, delay| tracing::warn!(?delay, %error, "retrying download stream"))
@@ -252,7 +293,11 @@ async fn fetch_stream(
     url: &str,
     destination: &Path,
     read_timeout: Duration,
+    cancel_rx: &watch::Receiver<bool>,
 ) -> Result<()> {
+    if *cancel_rx.borrow() {
+        bail!("download cancelled");
+    }
     let response = tokio::time::timeout(
         read_timeout,
         client
@@ -270,6 +315,7 @@ async fn fetch_stream(
         total,
         read_timeout,
         response.bytes_stream(),
+        cancel_rx,
     )
     .await
 }
@@ -282,7 +328,11 @@ async fn fetch_ranges(
     total: u64,
     read_timeout: Duration,
     max_retries: usize,
+    cancel_rx: &watch::Receiver<bool>,
 ) -> Result<()> {
+    if *cancel_rx.borrow() {
+        bail!("download cancelled");
+    }
     tokio::fs::File::create(destination)
         .await?
         .set_len(total)
@@ -295,8 +345,12 @@ async fn fetch_ranges(
     stream::iter(chunks)
         .map(|chunk| {
             let completed = Arc::clone(&completed);
+            let cancel_rx = cancel_rx.clone();
             async move {
-                (|| fetch_range(client, url, destination, total, chunk, read_timeout))
+                if *cancel_rx.borrow() {
+                    bail!("download cancelled");
+                }
+                (|| fetch_range(client, url, destination, total, chunk, read_timeout, &cancel_rx))
                     .retry(backoff(max_retries))
                     .when(retryable)
                     .notify(|error, delay| {
@@ -321,7 +375,11 @@ async fn fetch_range(
     total: u64,
     chunk: Chunk,
     read_timeout: Duration,
+    cancel_rx: &watch::Receiver<bool>,
 ) -> Result<()> {
+    if *cancel_rx.borrow() {
+        bail!("download cancelled");
+    }
     let response = tokio::time::timeout(
         read_timeout,
         client
@@ -358,6 +416,9 @@ async fn fetch_range(
         .await
         .context("download range read timed out")?
     {
+        if *cancel_rx.borrow() {
+            bail!("download cancelled");
+        }
         let bytes = bytes?;
         received += bytes.len() as u64;
         file.write_all(&bytes).await?;
@@ -376,12 +437,16 @@ async fn write_stream<S, B, E>(
     total: u64,
     read_timeout: Duration,
     mut body: S,
+    cancel_rx: &watch::Receiver<bool>,
 ) -> Result<()>
 where
     S: futures::Stream<Item = std::result::Result<B, E>> + Unpin,
     B: AsRef<[u8]>,
     E: std::error::Error + Send + Sync + 'static,
 {
+    if *cancel_rx.borrow() {
+        bail!("download cancelled");
+    }
     let mut output = BufWriter::with_capacity(
         WRITE_BUFFER_SIZE,
         tokio::fs::File::create(destination).await?,
@@ -393,6 +458,9 @@ where
         .await
         .context("download read timed out")?
     {
+        if *cancel_rx.borrow() {
+            bail!("download cancelled");
+        }
         let bytes = bytes?;
         output.write_all(bytes.as_ref()).await?;
         completed += bytes.as_ref().len() as u64;
@@ -432,6 +500,9 @@ fn connection_count() -> usize {
 }
 
 fn retryable(error: &anyhow::Error) -> bool {
+    if error.to_string().contains("download cancelled") {
+        return false;
+    }
     error
         .chain()
         .find_map(|cause| cause.downcast_ref::<reqwest::Error>())

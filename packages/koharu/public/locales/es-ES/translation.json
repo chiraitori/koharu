@@ -6,11 +6,15 @@
     "version": "Versión"
   },
   "activity": {
+    "cancel": "Cancelar",
+    "cancelAll": "Cancelar todo",
+    "collapse": "Colapsar",
     "dismiss": "Descartar",
     "downloadFailed": "Error en la descarga.",
     "downloadingFiles": "Descargando {{count}} archivos",
     "downloadingFiles_one": "Descargando {{count}} archivos",
     "downloadingFiles_other": "Descargando {{count}} archivos",
+    "expand": "Expandir",
     "modelDownload": "Descarga del modelo",
     "processing": "Procesando",
     "processingFailed": "Error de procesamiento.",

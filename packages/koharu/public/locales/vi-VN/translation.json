@@ -6,11 +6,15 @@
     "version": "Phiên bản"
   },
   "activity": {
+    "cancel": "Huỷ",
+    "cancelAll": "Huỷ tất cả",
+    "collapse": "Thu gọn",
     "dismiss": "Bỏ qua",
     "downloadFailed": "Tải xuống thất bại.",
     "downloadingFiles": "Đang tải xuống {{count}} tệp",
     "downloadingFiles_one": "Đang tải xuống {{count}} tệp",
     "downloadingFiles_other": "Đang tải xuống {{count}} tệp",
+    "expand": "Mở rộng",
     "modelDownload": "Tải mô hình",
     "processing": "Đang xử lý",
     "processingFailed": "Xử lý thất bại.",

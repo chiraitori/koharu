@@ -6,11 +6,15 @@
     "version": "バージョン"
   },
   "activity": {
+    "cancel": "キャンセル",
+    "cancelAll": "すべてキャンセル",
+    "collapse": "折りたたむ",
     "dismiss": "閉じる",
     "downloadFailed": "ダウンロードに失敗しました。",
     "downloadingFiles": "{{count}}件のファイルをダウンロード中",
     "downloadingFiles_one": "{{count}}件のファイルをダウンロード中",
     "downloadingFiles_other": "{{count}}件のファイルをダウンロード中",
+    "expand": "展開",
     "modelDownload": "モデルのダウンロード",
     "processing": "処理中",
     "processingFailed": "処理に失敗しました。",

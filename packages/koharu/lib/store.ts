@@ -201,8 +201,11 @@ export function receiveJob(job: Job): void {
 export function receiveDownload(download: Download): void {
   useKoharuStore.setState((state) => {
     const downloads = { ...state.downloads }
-    if (download.state === 'finished') delete downloads[String(download.id)]
-    else downloads[String(download.id)] = download
+    if (download.state === 'finished' || download.error?.includes('download cancelled')) {
+      delete downloads[String(download.id)]
+    } else {
+      downloads[String(download.id)] = download
+    }
     return { downloads }
   })
 }

@@ -6,11 +6,15 @@
     "version": "Версия"
   },
   "activity": {
+    "cancel": "Отмена",
+    "cancelAll": "Отменить все",
+    "collapse": "Свернуть",
     "dismiss": "Закрыть",
     "downloadFailed": "Не удалось скачать.",
     "downloadingFiles": "Скачивание файлов: {{count}}",
     "downloadingFiles_one": "Скачивание файлов: {{count}}",
     "downloadingFiles_other": "Скачивание файлов: {{count}}",
+    "expand": "Развернуть",
     "modelDownload": "Скачивание модели",
     "processing": "Обработка",
     "processingFailed": "Ошибка обработки.",

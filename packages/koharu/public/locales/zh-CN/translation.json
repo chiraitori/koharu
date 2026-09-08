@@ -6,11 +6,15 @@
     "version": "版本"
   },
   "activity": {
+    "cancel": "取消",
+    "cancelAll": "全部取消",
+    "collapse": "折叠",
     "dismiss": "关闭",
     "downloadFailed": "下载失败。",
     "downloadingFiles": "正在下载 {{count}} 个文件",
     "downloadingFiles_one": "正在下载 {{count}} 个文件",
     "downloadingFiles_other": "正在下载 {{count}} 个文件",
+    "expand": "展开",
     "modelDownload": "模型下载",
     "processing": "正在处理",
     "processingFailed": "处理失败。",

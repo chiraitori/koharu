@@ -6,11 +6,15 @@
     "version": "Sürüm"
   },
   "activity": {
+    "cancel": "İptal",
+    "cancelAll": "Tümünü iptal et",
+    "collapse": "Daralt",
     "dismiss": "Kapat",
     "downloadFailed": "İndirme başarısız oldu.",
     "downloadingFiles": "{{count}} dosya indiriliyor",
     "downloadingFiles_one": "{{count}} dosya indiriliyor",
     "downloadingFiles_other": "{{count}} dosya indiriliyor",
+    "expand": "Genişlet",
     "modelDownload": "Model indirme",
     "processing": "İşleniyor",
     "processingFailed": "İşleme başarısız oldu.",

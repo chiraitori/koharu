@@ -150,9 +150,9 @@ describe('Tauri runtime', () => {
   })
 
   it('applies independent channel updates directly to the store', async () => {
-    useKoharuStore.setState({ downloads: {}, resources: null })
+    useKoharuStore.setState({ downloads: {}, resources: null, agentPageActivity: {}, agentActivity: null })
     const { binding, dispose } = await start()
-    const [, , downloadChannel, resourcesChannel] = binding.mock.calls[0]
+    const [, , downloadChannel, resourcesChannel, , agentActivityChannel] = binding.mock.calls[0]
 
     downloadChannel.onmessage({
       id: 7,
@@ -170,11 +170,17 @@ describe('Tauri runtime', () => {
         { name: 'GPU', selected: true, memory_budget: 8192, memory_used: 4096, utilization: 40 },
       ],
     })
+    agentActivityChannel.onmessage({
+      page: 'page-1',
+      action: 'view_page',
+    })
     expect(useKoharuStore.getState().downloads[7]).toMatchObject({ completed: 25, total: 100 })
     expect(useKoharuStore.getState().resources).toMatchObject({
       process_cpu: 5,
       devices: [{ memory_used: 4096 }],
     })
+    expect(useKoharuStore.getState().agentPageActivity['page-1']).toBeDefined()
+    expect(useKoharuStore.getState().agentActivity).toBeDefined()
     dispose()
   })
 

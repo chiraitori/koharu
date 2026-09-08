@@ -6,8 +6,8 @@ use crate::commands::{
     agent::AgentState,
     canvas::CanvasChannel,
     lifecycle::{
-        Download, DownloadChannel, DownloadState, Initialization, ModelResources, ProjectChannel,
-        ResourceChannel,
+        AgentActivityChannel, Download, DownloadChannel, DownloadState, Initialization,
+        ModelResources, ProjectChannel, ResourceChannel,
     },
     processing::{JobChannel, Processing},
     project::{CurrentProject, ProjectLibrary},
@@ -130,6 +130,7 @@ pub fn run(context: tauri::Context<Cef>) -> Result<()> {
             application.manage(DownloadChannel::default());
             application.manage(ResourceChannel::default());
             application.manage(ProjectChannel::default());
+            application.manage(AgentActivityChannel::default());
             application.manage(Initialization::default());
 
             let handle = application.handle().clone();

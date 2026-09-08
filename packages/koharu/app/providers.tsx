@@ -8,6 +8,7 @@ import { I18nextProvider } from 'react-i18next'
 import { StartupView } from '@/components/app/StartupView'
 import { Updater } from '@/components/app/Updater'
 import ClientOnly from '@/components/ClientOnly'
+import { toolActionDescription } from '@/components/editor/AgentPanel'
 import { refreshTranslationModels } from '@/lib/backend'
 import i18n from '@/lib/i18n'
 import { pageKey, pagesKey, projectKey, queryClient, refresh } from '@/lib/queries'
@@ -21,6 +22,7 @@ import {
 } from '@/lib/store'
 import {
   commands,
+  type AgentActivity,
   type CanvasState,
   type Download,
   type Job,
@@ -62,7 +64,7 @@ export function Providers({ children }: { children: ReactNode }) {
           channel<ProjectInfo | null>((project) => {
             const previous = queryClient.getQueryData<ProjectInfo | null>(projectKey)
             queryClient.setQueryData(projectKey, project)
-            if (previous?.name !== project?.name) {
+            if (previous?.name !== project?.name || (!previous?.active_page && project?.active_page)) {
               const store = useKoharuStore.getState()
               store.selectPages(project?.active_page ? [project.active_page] : [])
               store.selectLayers([])
@@ -72,6 +74,21 @@ export function Providers({ children }: { children: ReactNode }) {
             } else {
               queryClient.setQueryData(pagesKey, [])
               queryClient.setQueryData(pageKey, null)
+            }
+          }),
+          channel<AgentActivity>((activity) => {
+            const store = useKoharuStore.getState()
+            if (activity.action) {
+              const desc = toolActionDescription(activity.action, i18n.t.bind(i18n))
+              if (activity.page) {
+                store.setAgentPageActivity(activity.page, desc)
+              }
+              store.setAgentActivity(desc)
+            } else if (activity.page) {
+              store.setAgentPageActivity(activity.page, null)
+            } else {
+              store.clearAgentPageActivity()
+              store.setAgentActivity(null)
             }
           }),
         )

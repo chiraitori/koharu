@@ -1,6 +1,7 @@
 'use client'
 
-import { CircleAlert, Download, Square, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, CircleAlert, Download, Square, X } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { call } from '@/lib/backend'
@@ -46,29 +47,73 @@ export function ActivityCenter() {
 
 function DownloadGroup({ downloads }: { downloads: DownloadState[] }) {
   const { t } = useTranslation()
+  const dismiss = useKoharuStore((state) => state.dismissDownload)
+  const [expanded, setExpanded] = useState(true)
+
+  const totalCompleted = downloads.reduce((sum, download) => sum + download.completed, 0)
+  const totalBytes = downloads.reduce((sum, download) => sum + download.total, 0)
   const hasKnownTotal = downloads.every((download) => download.total > 0)
-  const percent = hasKnownTotal
-    ? progress(
-        downloads.reduce((sum, download) => sum + download.completed, 0),
-        downloads.reduce((sum, download) => sum + download.total, 0),
-      )
-    : null
+  const percent = hasKnownTotal ? progress(totalCompleted, totalBytes) : null
+
+  const sizeText =
+    totalBytes > 0
+      ? `${formatBytes(totalCompleted)} / ${formatBytes(totalBytes)}`
+      : formatBytes(totalCompleted)
+
+  const handleCancelAll = () => {
+    for (const d of downloads) dismiss(d.id)
+    void call(commands.cancelAllDownloads).catch(() => undefined)
+  }
 
   return (
-    <div className='border-b p-3 last:border-b-0'>
-      <div className='grid grid-cols-[1rem_minmax(0,1fr)_2.25rem_1.5rem] items-start gap-x-2.5'>
-        <Download className='mt-0.5 size-3.5 justify-self-center text-primary' />
-        <span className='truncate text-[11px]'>
-          {t('activity.downloadingFiles', { count: downloads.length })}
-        </span>
-        <span className='text-right text-[10px] tabular-nums'>
-          {percent !== null ? `${percent}%` : null}
-        </span>
-        <span aria-hidden='true' />
-        <div className='col-start-2 col-end-4'>
-          <Progress value={percent} />
+    <div className='border-b last:border-b-0'>
+      <div className='p-3'>
+        <div className='grid grid-cols-[1rem_minmax(0,1fr)_2.25rem_1.5rem] items-start gap-x-2.5'>
+          <button
+            type='button'
+            className='mt-0.5 flex size-3.5 items-center justify-center text-muted-foreground hover:text-foreground'
+            onClick={() => setExpanded(!expanded)}
+            aria-label={
+              expanded
+                ? t('activity.collapse', { defaultValue: 'Collapse' })
+                : t('activity.expand', { defaultValue: 'Expand' })
+            }
+          >
+            {expanded ? <ChevronDown className='size-3.5' /> : <ChevronRight className='size-3.5' />}
+          </button>
+          <div
+            className='min-w-0 cursor-pointer select-none'
+            onClick={() => setExpanded(!expanded)}
+          >
+            <span className='block truncate text-[11px] font-medium'>
+              {t('activity.downloadingFiles', { count: downloads.length })}
+            </span>
+            <p className='mt-0.5 truncate text-[10px] text-muted-foreground'>{sizeText}</p>
+          </div>
+          <span className='pt-0.5 text-right text-[10px] tabular-nums'>
+            {percent !== null ? `${percent}%` : null}
+          </span>
+          <Button
+            size='icon-xs'
+            variant='ghost'
+            className='-mt-1'
+            aria-label={t('activity.cancelAll')}
+            onClick={handleCancelAll}
+          >
+            <X className='size-3' />
+          </Button>
+          <div className='col-start-2 col-end-4'>
+            <Progress value={percent} />
+          </div>
         </div>
       </div>
+      {expanded && (
+        <div className='max-h-60 overflow-y-auto divide-y divide-border/40 border-t border-border/40 bg-muted/20'>
+          {downloads.map((download) => (
+            <DownloadItem key={download.id} download={download} nested />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -117,7 +162,13 @@ function JobItem({ job }: { job: Job }) {
   )
 }
 
-function DownloadItem({ download }: { download: DownloadState }) {
+function DownloadItem({
+  download,
+  nested = false,
+}: {
+  download: DownloadState
+  nested?: boolean
+}) {
   const { t } = useTranslation()
   const dismiss = useKoharuStore((state) => state.dismissDownload)
   if (download.state === 'failed') {
@@ -129,15 +180,38 @@ function DownloadItem({ download }: { download: DownloadState }) {
     )
   }
   const percent = progress(download.completed, download.total)
+  const sizeText =
+    download.total > 0
+      ? `${formatBytes(download.completed)} / ${formatBytes(download.total)}`
+      : formatBytes(download.completed)
+
+  const handleCancel = () => {
+    dismiss(download.id)
+    void call(commands.cancelDownload, download.id).catch(() => undefined)
+  }
+
   return (
-    <div className='border-b p-3 last:border-b-0'>
+    <div className={nested ? 'p-2.5' : 'border-b p-3 last:border-b-0'}>
       <div className='grid grid-cols-[1rem_minmax(0,1fr)_2.25rem_1.5rem] items-start gap-x-2.5'>
         <Download className='mt-0.5 size-3.5 justify-self-center text-primary' />
-        <span className='truncate text-[11px]'>{download.name || t('activity.modelDownload')}</span>
-        <span className='text-right text-[10px] tabular-nums'>
+        <div className='min-w-0'>
+          <span className='block truncate text-[11px] font-medium'>
+            {download.name || t('activity.modelDownload')}
+          </span>
+          <p className='mt-0.5 truncate text-[10px] text-muted-foreground'>{sizeText}</p>
+        </div>
+        <span className='pt-0.5 text-right text-[10px] tabular-nums'>
           {percent !== null ? `${percent}%` : null}
         </span>
-        <span aria-hidden='true' />
+        <Button
+          size='icon-xs'
+          variant='ghost'
+          className='-mt-1'
+          aria-label={t('activity.cancel')}
+          onClick={handleCancel}
+        >
+          <X className='size-3' />
+        </Button>
         <div className='col-start-2 col-end-4'>
           <Progress value={percent} />
         </div>
@@ -184,4 +258,12 @@ function Progress({ value }: { value: number | null }) {
 
 function progress(completed: number, total: number): number | null {
   return total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : null
+}
+
+function formatBytes(value: number): string {
+  if (value <= 0) return '0 B'
+  if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GB`
+  if (value >= 1024 ** 2) return `${(value / 1024 ** 2).toFixed(1)} MB`
+  if (value >= 1024) return `${Math.round(value / 1024)} KB`
+  return `${value} B`
 }

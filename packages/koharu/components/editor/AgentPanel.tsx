@@ -28,7 +28,7 @@ import {
 } from '@koharu/ui/components/select'
 import { Textarea } from '@koharu/ui/components/textarea'
 
-function toolActionDescription(name: string, t: (key: string) => string): string {
+export function toolActionDescription(name: string, t: (key: string, options?: any) => string): string {
   switch (name) {
     case 'view_page':
       return t('agent.tools.viewPage')
@@ -50,6 +50,16 @@ function toolActionDescription(name: string, t: (key: string) => string): string
       return t('agent.tools.importImages')
     case 'delete_elements':
       return t('agent.tools.deleteElements')
+    case 'rename_page':
+      return t('navigator.rename')
+    case 'move_page':
+      return t('navigator.move', { defaultValue: 'Moving page…' })
+    case 'delete_pages':
+      return t('navigator.delete')
+    case 'undo':
+      return t('menu.undo', { defaultValue: 'Undo' })
+    case 'redo':
+      return t('menu.redo', { defaultValue: 'Redo' })
     default:
       return `${t('agent.applying')}: ${name}`
   }

@@ -1584,7 +1584,7 @@ describe('greenfield editor', () => {
     await waitFor(() => expect(stop).toHaveBeenCalledWith('job'))
   })
 
-  it('combines concurrent downloads into one progress bar', () => {
+  it('shows detailed download items, allows collapse/expand and cancellation', async () => {
     useKoharuStore.setState({
       downloads: {
         one: {
@@ -1605,13 +1605,34 @@ describe('greenfield editor', () => {
         },
       },
     })
+    const cancel = vi.spyOn(commands, 'cancelDownload').mockResolvedValue(true)
+    const cancelAll = vi.spyOn(commands, 'cancelAllDownloads').mockResolvedValue(2)
 
     render(<ActivityCenter />)
 
     expect(screen.getByText('Downloading 2 files')).toBeInTheDocument()
     expect(screen.getByText('50%')).toBeInTheDocument()
-    expect(screen.getAllByRole('progressbar')).toHaveLength(1)
+    expect(screen.getByText('one.ttf')).toBeInTheDocument()
+    expect(screen.getByText('two.ttf')).toBeInTheDocument()
+    expect(screen.getByText('25 B / 100 B')).toBeInTheDocument()
+    expect(screen.getByText('75 B / 100 B')).toBeInTheDocument()
+
+    // Collapse details
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse' }))
     expect(screen.queryByText('one.ttf')).not.toBeInTheDocument()
     expect(screen.queryByText('two.ttf')).not.toBeInTheDocument()
+
+    // Expand details
+    fireEvent.click(screen.getByRole('button', { name: 'Expand' }))
+    expect(screen.getByText('one.ttf')).toBeInTheDocument()
+
+    // Cancel single download
+    const cancelButtons = screen.getAllByRole('button', { name: 'Cancel' })
+    fireEvent.click(cancelButtons[0])
+    await waitFor(() => expect(cancel).toHaveBeenCalledWith(1))
+
+    // Cancel all downloads
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel all' }))
+    await waitFor(() => expect(cancelAll).toHaveBeenCalled())
   })
 })

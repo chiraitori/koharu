@@ -2,6 +2,7 @@ use std::{
     collections::HashSet,
     io::Cursor,
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use anyhow::{Context as _, Result, anyhow, bail};
@@ -180,7 +181,8 @@ pub(crate) struct CurrentProject {
 
 #[derive(Clone)]
 pub(crate) struct ProjectLibrary {
-    root: PathBuf,
+    root: Arc<parking_lot::RwLock<PathBuf>>,
+    roots: Vec<PathBuf>,
 }
 
 fn is_writable_directory(dir: &Path) -> bool {
@@ -195,6 +197,25 @@ fn is_writable_directory(dir: &Path) -> bool {
         }
         Err(_) => false,
     }
+}
+
+fn is_permission_denied(error: &anyhow::Error) -> bool {
+    for cause in error.chain() {
+        if let Some(io_err) = cause.downcast_ref::<std::io::Error>() {
+            if io_err.kind() == std::io::ErrorKind::PermissionDenied {
+                return true;
+            }
+        }
+        let msg = cause.to_string();
+        if msg.contains("Access is denied")
+            || msg.contains("os error 5")
+            || msg.contains("Permission denied")
+            || msg.contains("permission denied")
+        {
+            return true;
+        }
+    }
+    false
 }
 
 fn copy_dir_all(src: &Path, dst: &Path) -> std::io::Result<()> {
@@ -234,72 +255,93 @@ fn migrate_projects_if_needed(source: &Path, destination: &Path) {
 }
 
 impl ProjectLibrary {
-    pub(crate) fn new() -> Result<Self> {
-        let root = Self::resolve_library_root()?;
-        Ok(Self { root })
-    }
-
-    fn resolve_library_root() -> Result<PathBuf> {
+    fn candidate_roots() -> Vec<PathBuf> {
+        let mut roots = Vec::new();
         if let Some(doc_dir) = dirs::document_dir() {
             let doc_root = doc_dir.join("Koharu");
-            if is_writable_directory(&doc_root) {
-                return Ok(doc_root);
+            if !roots.contains(&doc_root) {
+                roots.push(doc_root);
             }
-            tracing::warn!(
-                "Documents directory at {} is not writable; falling back to local data directory",
-                doc_root.display()
-            );
         }
+        if let Some(data_dir) = dirs::data_local_dir() {
+            let app_root = data_dir.join("Koharu").join("Projects");
+            if !roots.contains(&app_root) {
+                roots.push(app_root);
+            }
+        }
+        if let Some(home_dir) = dirs::home_dir() {
+            let home_root = home_dir.join(".koharu").join("projects");
+            if !roots.contains(&home_root) {
+                roots.push(home_root);
+            }
+        }
+        roots
+    }
+
+    pub(crate) fn new() -> Result<Self> {
+        let roots = Self::candidate_roots();
+        let preferred = roots
+            .iter()
+            .find(|dir| is_writable_directory(dir))
+            .cloned()
+            .or_else(|| roots.first().cloned())
+            .context("no project directory candidates available")?;
 
         if let Some(data_dir) = dirs::data_local_dir() {
             let app_root = data_dir.join("Koharu").join("Projects");
-            if is_writable_directory(&app_root) {
+            if preferred != app_root {
                 if let Some(doc_dir) = dirs::document_dir() {
                     let doc_root = doc_dir.join("Koharu");
-                    migrate_projects_if_needed(&doc_root, &app_root);
+                    if preferred == app_root {
+                        migrate_projects_if_needed(&doc_root, &app_root);
+                    }
                 }
-                return Ok(app_root);
             }
         }
 
-        if let Some(home_dir) = dirs::home_dir() {
-            let home_root = home_dir.join(".koharu").join("projects");
-            if is_writable_directory(&home_root) {
-                return Ok(home_root);
-            }
-        }
-
-        bail!("no writable project directory found")
+        Ok(Self {
+            root: Arc::new(parking_lot::RwLock::new(preferred)),
+            roots,
+        })
     }
 
     pub(crate) fn list(&self) -> Result<Vec<ProjectSummary>> {
-        let mut projects = std::fs::read_dir(&self.root)
-            .with_context(|| format!("failed to read {}", self.root.display()))?
-            .filter_map(|entry| entry.ok())
-            .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
-            .filter_map(|entry| {
+        let mut summaries: std::collections::HashMap<String, (std::time::SystemTime, ProjectSummary)> =
+            std::collections::HashMap::new();
+
+        for dir in &self.roots {
+            let Ok(entries) = std::fs::read_dir(dir) else {
+                continue;
+            };
+            for entry in entries.flatten() {
                 let path = entry.path();
-                let is_project_directory = path
+                let is_project = path
                     .extension()
                     .and_then(|extension| extension.to_str())
                     .is_some_and(|extension| extension.eq_ignore_ascii_case("khrproj"))
                     && (path.join("state-a.khr").is_file() || path.join("state-b.khr").is_file());
-                if !is_project_directory {
-                    return None;
+                if !is_project {
+                    continue;
                 }
+                let Some(name) = path.file_stem().and_then(|stem| stem.to_str()).map(str::to_owned) else {
+                    continue;
+                };
                 let last_used = ["state-a.khr", "state-b.khr"]
                     .into_iter()
                     .filter_map(|file| std::fs::metadata(path.join(file)).ok()?.modified().ok())
                     .max()
                     .unwrap_or(std::time::UNIX_EPOCH);
-                Some((
-                    last_used,
-                    ProjectSummary {
-                        name: path.file_stem()?.to_str()?.to_owned(),
-                    },
-                ))
-            })
-            .collect::<Vec<_>>();
+                let key = name.to_lowercase();
+                match summaries.get(&key) {
+                    Some((existing_time, _)) if *existing_time >= last_used => {}
+                    _ => {
+                        summaries.insert(key, (last_used, ProjectSummary { name }));
+                    }
+                }
+            }
+        }
+
+        let mut projects: Vec<_> = summaries.into_values().collect();
         projects.sort_unstable_by(|(left_used, left), (right_used, right)| {
             right_used
                 .cmp(left_used)
@@ -309,27 +351,90 @@ impl ProjectLibrary {
     }
 
     pub(crate) async fn create(&self, name: &str) -> Result<Project> {
-        let (name, path) = self.resolve(name)?;
-        Project::create(name, path).await
+        let name = validate_project_name(name)?;
+        let active_root = self.root.read().clone();
+        let path = active_root.join(format!("{name}.khrproj"));
+
+        match Project::create(name.clone(), path.clone()).await {
+            Ok(project) => Ok(project),
+            Err(err) if is_permission_denied(&err) => {
+                for fallback in &self.roots {
+                    if fallback != &active_root {
+                        let fallback_path = fallback.join(format!("{name}.khrproj"));
+                        tracing::warn!(
+                            %err,
+                            fallback = %fallback_path.display(),
+                            "Failed to create project in active root due to permission denial; retrying in fallback directory"
+                        );
+                        if let Ok(project) = Project::create(name.clone(), fallback_path).await {
+                            *self.root.write() = fallback.clone();
+                            return Ok(project);
+                        }
+                    }
+                }
+                Err(err)
+            }
+            Err(err) => Err(err),
+        }
     }
 
     pub(crate) async fn open(&self, name: &str) -> Result<Project> {
         let (name, path) = self.resolve(name)?;
-        Project::open(name, path).await
+        match Project::open(name.clone(), path.clone()).await {
+            Ok(project) => Ok(project),
+            Err(err) if is_permission_denied(&err) => {
+                for fallback in &self.roots {
+                    let fallback_path = fallback.join(format!("{name}.khrproj"));
+                    if fallback_path != path {
+                        tracing::warn!(
+                            %err,
+                            from = %path.display(),
+                            to = %fallback_path.display(),
+                            "Cannot open project due to permission denial; attempting to copy to writable fallback"
+                        );
+                        if copy_dir_all(&path, &fallback_path).is_ok() {
+                            if let Ok(project) = Project::open(name.clone(), fallback_path).await {
+                                *self.root.write() = fallback.clone();
+                                return Ok(project);
+                            }
+                        }
+                    }
+                }
+                Err(err)
+            }
+            Err(err) => Err(err),
+        }
     }
 
     pub(crate) fn delete(&self, name: &str) -> Result<()> {
-        let (_, path) = self.resolve(name)?;
-        if !path.is_dir() {
+        let name = validate_project_name(name)?;
+        let filename = format!("{name}.khrproj");
+        let mut deleted = false;
+        for dir in &self.roots {
+            let path = dir.join(&filename);
+            if path.is_dir() {
+                std::fs::remove_dir_all(&path)
+                    .with_context(|| format!("failed to delete {}", path.display()))?;
+                deleted = true;
+            }
+        }
+        if !deleted {
             bail!("project {name:?} does not exist");
         }
-        std::fs::remove_dir_all(&path)
-            .with_context(|| format!("failed to delete {}", path.display()))
+        Ok(())
     }
 
     fn resolve(&self, name: &str) -> Result<(String, PathBuf)> {
         let name = validate_project_name(name)?;
-        Ok((name.clone(), self.root.join(format!("{name}.khrproj"))))
+        let filename = format!("{name}.khrproj");
+        for dir in &self.roots {
+            let candidate = dir.join(&filename);
+            if candidate.is_dir() {
+                return Ok((name.clone(), candidate));
+            }
+        }
+        let root = self.root.read().clone();
+        Ok((name.clone(), root.join(filename)))
     }
 }
 
