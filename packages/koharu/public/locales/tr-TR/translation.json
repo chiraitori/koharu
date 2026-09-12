@@ -16,6 +16,7 @@
     "downloadingFiles_other": "{{count}} dosya indiriliyor",
     "expand": "Genişlet",
     "modelDownload": "Model indirme",
+    "pageLabel": "Sayfa {{number}}: {{label}}",
     "processing": "İşleniyor",
     "processingFailed": "İşleme başarısız oldu.",
     "stop": "Durdur",

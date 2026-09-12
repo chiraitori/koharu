@@ -16,6 +16,7 @@
     "downloadingFiles_other": "Descargando {{count}} archivos",
     "expand": "Expandir",
     "modelDownload": "Descarga del modelo",
+    "pageLabel": "Página {{number}}: {{label}}",
     "processing": "Procesando",
     "processingFailed": "Error de procesamiento.",
     "stop": "Detener",
