@@ -43,6 +43,8 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
+      - name: Install wasm target
+        run: rustup target add wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: koharu-app-${{ matrix.platform }}
