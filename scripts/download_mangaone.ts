@@ -87,7 +87,7 @@ interface ViewerData {
   chapterList: ChapterMeta[]
 }
 
-async function fetchViewerV2(titleId: number, chapterId: number): Promise<ViewerData> {
+export async function fetchViewerV2(titleId: number, chapterId: number): Promise<ViewerData> {
   const url = `https://manga-one.com/api/client?rq=viewer_v2&title_id=${titleId}&chapter_id=${chapterId}&page=1&limit=10&sort_type=desc&list_type=chapter&free_point=0&event_point=0&paid_point=0`
   const res = await fetch(url, { method: 'POST' })
   if (!res.ok) {
@@ -215,19 +215,25 @@ async function downloadAndDecryptPage(
 
 async function main() {
   const args = process.argv.slice(2)
-  const target = args[0] || 'https://manga-one.com/manga/28342/chapter/356962'
+  const downloadAll = args.includes('--all')
+  const cleanArgs = args.filter(a => !a.startsWith('--'))
+  const target = cleanArgs[0] || 'https://manga-one.com/manga/28342/chapter/356962'
 
   let titleId = 0
   let chapterId = 0
 
   const urlMatch = target.match(/\/manga\/(\d+)\/chapter\/(\d+)/)
+  const titleOnlyMatch = target.match(/\/manga\/(\d+)/)
+
   if (urlMatch) {
     titleId = parseInt(urlMatch[1], 10)
     chapterId = parseInt(urlMatch[2], 10)
+  } else if (titleOnlyMatch) {
+    titleId = parseInt(titleOnlyMatch[1], 10)
   } else if (/^\d+$/.test(target)) {
     titleId = parseInt(target, 10)
   } else {
-    console.error('Usage: bun scripts/download_mangaone.ts <url-or-titleId>')
+    console.error('Usage: bun scripts/download_mangaone.ts <url-or-titleId> [--all]')
     process.exit(1)
   }
 
@@ -245,7 +251,11 @@ async function main() {
   await mkdir(outBase, { recursive: true })
 
   const chaptersToDownload: ChapterMeta[] = []
-  if (initialViewer.chapterList.length > 0) {
+  if (urlMatch && !downloadAll) {
+    console.info(`[MangaOne Fetcher] Mode: Single Chapter (ID: ${chapterId})`)
+    const targetCh = initialViewer.chapterList.find(c => c.chapterId === chapterId) || initialViewer.currentChapter
+    chaptersToDownload.push(targetCh)
+  } else if (initialViewer.chapterList.length > 0) {
     console.info(`[MangaOne Fetcher] Discovered ${initialViewer.chapterList.length} total chapters in series:`)
     for (const ch of initialViewer.chapterList) {
       console.info(`  - ${ch.chapterName}: ${ch.description} (Badge: ${ch.badge})`)
@@ -254,6 +264,7 @@ async function main() {
   } else {
     chaptersToDownload.push(initialViewer.currentChapter)
   }
+
 
   for (const ch of chaptersToDownload) {
     console.info(`\n--> Checking ${ch.chapterName} (${ch.description})...`)
