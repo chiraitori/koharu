@@ -1279,14 +1279,15 @@ async fn commit_transform(handle: &AppHandle<Cef>, arguments: Value) -> Result<M
             item.get("element").cloned().context("missing 'element'")?,
         )?;
         let element = parse_entity(&element_str)?;
+        let angle_degrees = item.get("angle_degrees").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
         let frame = Frame {
             x: item.get("x").and_then(|v| v.as_f64()).context("missing 'x'")? as f32,
             y: item.get("y").and_then(|v| v.as_f64()).context("missing 'y'")? as f32,
             width: item.get("width").and_then(|v| v.as_f64()).context("missing 'width'")? as f32,
             height: item.get("height").and_then(|v| v.as_f64()).context("missing 'height'")? as f32,
-            angle_degrees: item.get("angle_degrees").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32,
+            angle_degrees,
         };
-        geometries.push((element, geometry_from_frame(frame)?));
+        geometries.push((element, geometry_from_frame(frame)?, angle_degrees));
     }
     let (commit, page) = {
         let current = handle.state::<CurrentProject>();
