@@ -14,6 +14,7 @@ import type {
   StartupState,
   ModelResources,
   RunId,
+  PageSize,
 } from '@koharu/bridge/protocol'
 import { toast } from '@koharu/ui/components/toast'
 
@@ -26,7 +27,11 @@ export interface ConversationMessage {
 
 export type CanvasTool = 'select' | 'text' | 'draw' | 'eraser' | 'color_picker' | 'remove' | 'pan'
 export const MIN_BRUSH_DIAMETER = 1
-export const MAX_BRUSH_DIAMETER = 128
+export function maxBrushDiameter(size: PageSize): number {
+  // Assume that for all sizes below 2048 width, 128 is sufficient.
+  // For anything above, scale by percentage greater than 2048 width.
+  return Math.round(Math.max(size.width / 2048, 1.0) * 128)
+}
 
 export function isBrushTool(tool: CanvasTool): boolean {
   return tool === 'draw' || tool === 'eraser' || tool === 'remove'
