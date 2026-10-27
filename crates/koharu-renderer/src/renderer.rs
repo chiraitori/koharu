@@ -769,7 +769,7 @@ impl Traversal<'_> {
             None
         };
         let (geometry, frame, balloon_contour) = if let Some(geometry) = authored {
-            let Some(frame) = geometry_frame(&geometry) else {
+            let Some(frame) = geometry_frame(&geometry, layout.angle_degrees) else {
                 return Ok(None);
             };
             let balloon = placement
@@ -881,7 +881,7 @@ impl Traversal<'_> {
         dependencies.insert(RenderDependency::Entity(target));
         dependencies.insert(component_dependency::<Geometry>(target));
         let geometry = self.snapshot.analysis_region(target)?.geometry()?;
-        let Some(frame) = geometry_frame(&geometry) else {
+        let Some(frame) = geometry_frame(&geometry, None) else {
             return Ok(None);
         };
         Ok(Some(ResolvedPlacement {
@@ -909,7 +909,7 @@ impl Traversal<'_> {
         dependencies.insert(RenderDependency::Entity(target));
         dependencies.insert(component_dependency::<Geometry>(target));
         let geometry = self.snapshot.analysis_region(target)?.geometry()?;
-        let Some(frame) = geometry_frame(&geometry) else {
+        let Some(frame) = geometry_frame(&geometry, None) else {
             return Ok(None);
         };
         Ok(Some(ResolvedPlacement {
@@ -996,7 +996,7 @@ fn resolve_balloon_flows(snapshot: &Snapshot, page: EntityId) -> Result<BalloonF
     for (balloon, seeds) in groups {
         let region = snapshot.analysis_region(balloon)?;
         let geometry = region.geometry()?;
-        let Some(frame) = geometry_frame(&geometry) else {
+        let Some(frame) = geometry_frame(&geometry, None) else {
             continue;
         };
         let balloon_contour = contour(&geometry, frame);
@@ -1831,6 +1831,7 @@ mod tests {
                     &SceneTextLayout {
                         origin: Origin::User,
                         kind: TextLayoutKind::Paragraph,
+                        angle_degrees: Some(0.0),
                     },
                 )?;
                 edit.set(text, &Geometry::rectangle(10.0, 10.0, 80.0, 40.0))?;
@@ -1923,6 +1924,7 @@ mod tests {
                     &SceneTextLayout {
                         origin: Origin::User,
                         kind: TextLayoutKind::Paragraph,
+                        angle_degrees: Some(0.0),
                     },
                 )?;
                 edit.set(first, &Geometry::rectangle(10.0, 10.0, 80.0, 40.0))?;
@@ -1948,6 +1950,7 @@ mod tests {
                     &SceneTextLayout {
                         origin: Origin::User,
                         kind: TextLayoutKind::Paragraph,
+                        angle_degrees: Some(0.0),
                     },
                 )?;
                 edit.set(second, &Geometry::rectangle(100.0, 10.0, 80.0, 40.0))?;
@@ -2053,6 +2056,7 @@ mod tests {
                         &SceneTextLayout {
                             origin: Origin::User,
                             kind: TextLayoutKind::Paragraph,
+                            angle_degrees: None,
                         },
                     )?;
                     edit.relate::<RecognizedFrom>(content, region)?;

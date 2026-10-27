@@ -54,6 +54,7 @@ const emptyCredential = () => ({ configured: false, value: null, clear: false })
 
 const textLayer: Layer = {
   type: 'text',
+  angle_degrees: 0,
   id: 'element',
   parent: 'page',
   geometry: {

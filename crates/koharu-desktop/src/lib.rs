@@ -235,7 +235,7 @@ impl Desktop {
         &self,
         expected_revision: Revision,
         elements: &[TransformFrame],
-    ) -> Result<Vec<(EntityId, Geometry)>> {
+    ) -> Result<Vec<(EntityId, Geometry, f32)>> {
         let presentation = self.presentation.read();
         let rendered = presentation
             .frame
@@ -292,8 +292,10 @@ impl Desktop {
                     .map(|point| transform_point(coefficients, point))
                     .collect(),
             };
-            if geometry != *layer.geometry() {
-                geometries.push((element.element, geometry));
+            if geometry != *layer.geometry()
+                || element.frame.angle_degrees != original.angle_degrees
+            {
+                geometries.push((element.element, geometry, element.frame.angle_degrees));
             }
         }
         Ok(geometries)

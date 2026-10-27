@@ -396,6 +396,7 @@ fn write_region<'a>(
         &TextLayout {
             origin: Origin::Generated(generation.clone()),
             kind: TextLayoutKind::Paragraph,
+            angle_degrees: None,
         },
     )?;
     write_text_role(edit, content, "dev.koharu.text.free-text", generation)
@@ -1941,6 +1942,7 @@ mod tests {
                     &TextLayout {
                         origin: Origin::User,
                         kind: TextLayoutKind::Paragraph,
+                        angle_degrees: None,
                     },
                 )?;
                 link_dialogue_regions(
