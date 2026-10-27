@@ -315,7 +315,8 @@
     "pages": "Trang",
     "rename": "Đổi tên trang…",
     "renameDescription": "Nhập tên mới cho trang này.",
-    "renameTitle": "Đổi tên trang"
+    "renameTitle": "Đổi tên trang",
+    "selected_pages": "Đã chọn {{count}} / {{total}} trang"
   },
   "outputPicker": {
     "instructions": "Chỉ dẫn dịch thuật",
