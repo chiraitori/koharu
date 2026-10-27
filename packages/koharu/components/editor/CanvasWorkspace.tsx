@@ -109,7 +109,6 @@ export function CanvasWorkspace() {
 
   const page = usePage().data
   const pages = usePages().data
-  const camera = useKoharuStore((state) => state.camera)
   const canvasPage = useKoharuStore((state) => state.canvasPage)
   const camera = useKoharuStore((state) => state.camera) 
   const canvasRevision = useKoharuStore((state) => state.canvasRevision)
@@ -286,9 +285,22 @@ export function CanvasWorkspace() {
     }
   }, [report])
 
+  // The camera reaches the canvas from the store, not from a render: a passive effect lands a
+  // frame late under continuous input and halves the presented rate.
   useEffect(() => {
-    canvas?.setView(camera.zoom, camera.translation)
-  }, [canvas, camera])
+    if (!canvas) return
+    const apply = ({ zoom, translation }: CanvasView) => {
+      try {
+        canvas.setView(zoom, translation)
+      } catch (error) {
+        receiveError(errorMessage(error))
+      }
+    }
+    apply(useKoharuStore.getState().camera)
+    return useKoharuStore.subscribe((state, previous) => {
+      if (state.camera !== previous.camera) apply(state.camera)
+    })
+  }, [canvas])
 
   useEffect(() => {
     if (
@@ -436,6 +448,7 @@ export function CanvasWorkspace() {
     }
 
     if (current.kind === 'pan') {
+      const { zoom } = useKoharuStore.getState().camera
       const bounds = surface.current!.getBoundingClientRect()
       const dpr = window.devicePixelRatio
       let translation: [number, number] = [
@@ -444,14 +457,14 @@ export function CanvasWorkspace() {
       ]
       translation = clampCameraTranslation(
         translation,
-        camera.zoom,
+        zoom,
         pageWidth ?? page.size.width,
         pageHeight ?? page.size.height,
         bounds.width * dpr,
         bounds.height * dpr,
         dpr,
       )
-      useKoharuStore.setState({ camera: { zoom: camera.zoom, translation, fitted: false } })
+      useKoharuStore.setState({ camera: { zoom, translation, fitted: false } })
       return
     }
 
@@ -515,8 +528,8 @@ export function CanvasWorkspace() {
     } else if (current.kind === 'move') {
       finishTransform()
     } else if (current.kind === 'text') {
-      const pointText =
-        current.frame.width < 4 / camera.zoom && current.frame.height < 4 / camera.zoom
+      const { zoom } = useKoharuStore.getState().camera
+      const pointText = current.frame.width < 4 / zoom && current.frame.height < 4 / zoom
       setDraft(null)
       void (
         pointText
@@ -608,7 +621,7 @@ export function CanvasWorkspace() {
                 kind: 'pan',
                 pointer: event.pointerId,
                 start: physical,
-                translation: camera.translation,
+                translation: useKoharuStore.getState().camera.translation,
               }
             } else if (tool === 'select') {
               const target = hitTestLayers(page.layers, point, layerFrames)
@@ -826,7 +839,6 @@ export function CanvasWorkspace() {
           {page && canvasState.status === 'ready' && (
             <CanvasOverlay
               page={page}
-              camera={camera}
               selected={selected}
               hovered={hovered}
               frames={layerFrames}
