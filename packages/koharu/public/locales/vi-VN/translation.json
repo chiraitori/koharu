@@ -19,7 +19,8 @@
     "processing": "Đang xử lý",
     "processingFailed": "Xử lý thất bại.",
     "stop": "Dừng",
-    "title": "Hoạt động"
+    "title": "Hoạt động",
+    "running_page": "Đang xử lý {{label}}"
   },
   "agent": {
     "account": "Tài khoản ChatGPT",
