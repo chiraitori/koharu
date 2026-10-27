@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag to release (e.g. v0.82.0)'
+        required: false
+        default: ''
   push:
     tags:
       - '*'
@@ -123,8 +128,8 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         with:
           tauriScript: cargo tauri
-          tagName: ${{ github.ref_name }}
-          releaseName: ${{ github.ref_name }}
+          tagName: ${{ inputs.tag || github.ref_name }}
+          releaseName: ${{ inputs.tag || github.ref_name }}
           releaseBody: ${{ steps.release_notes.outputs.release_body }}
           releaseDraft: false
           prerelease: false
