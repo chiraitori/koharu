@@ -13,8 +13,8 @@ authors = [
     "Wangchong Zhou <fffonion@gmail.com>",
 ]
 readme = "README.md"
-homepage = "https://koharu.rs"
-repository = "https://github.com/koharu-rs/koharu"
+homepage = "https://github.com/chiraitori/kore-minit"
+repository = "https://github.com/chiraitori/kore-minit"
 keywords = ["manga", "ocr", "translation", "deep_learning", "computer_vision"]
 publish = false
 

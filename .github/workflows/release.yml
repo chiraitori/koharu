@@ -52,7 +52,7 @@ jobs:
           save-if: false
 
       - name: Install macOS CEF helper targets
-        if: startsWith(matrix.platform, 'macos') && secrets.BUILD_CERTIFICATE_BASE64 != ''
+        if: startsWith(matrix.platform, 'macos')
         run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
 
       - name: install dependencies (ubuntu only)
@@ -86,43 +86,13 @@ jobs:
         run: |
           {
             echo 'release_body<<EOF'
-            bun git-cliff --current --strip all
+            bun git-cliff --current --strip all || bun git-cliff --unreleased --strip all || echo "Release ${{ inputs.tag || github.ref_name }}"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
-
-      - name: Import Apple Developer Certificate
-        if: startsWith(matrix.platform, 'macos') && secrets.BUILD_CERTIFICATE_BASE64 != ''
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          APPLE_CERTIFICATE_PASSWORD: ""
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: |
-          echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security set-keychain-settings -t 3600 -u build.keychain
-          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-          security find-identity -v -p codesigning build.keychain
-
-      - name: Verify Certificate
-        if: startsWith(matrix.platform, 'macos') && secrets.BUILD_CERTIFICATE_BASE64 != ''
-        run: |
-          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application")
-          CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
-          echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
-          echo "Certificate imported."
 
       - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM }}
-          APPLE_CERTIFICATE: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          APPLE_CERTIFICATE_PASSWORD: ""
-          APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
@@ -136,15 +106,3 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
-
-  winget:
-    needs: release
-    if: github.repository == 'koharu-rs/koharu' && secrets.WINGET_TOKEN != ''
-    runs-on: ubuntu-latest
-    steps:
-      - uses: vedantmgoyal9/winget-releaser@main
-        with:
-          identifier: mayocream.koharu
-          version: ${{ github.ref_name }}
-          installers-regex: '(-setup\.exe|\.msi)$'
-          token: ${{ secrets.WINGET_TOKEN }}
