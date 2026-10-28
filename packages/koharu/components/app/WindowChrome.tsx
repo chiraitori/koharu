@@ -110,8 +110,8 @@ function WindowResizeHandles() {
       if (event.button !== 0) return
       event.preventDefault()
       event.stopPropagation()
-      void getSafeWindow()?
-        .startResizeDragging(direction)
+      void getSafeWindow()
+        ?.startResizeDragging(direction)
         .catch(() => undefined)
     }
 

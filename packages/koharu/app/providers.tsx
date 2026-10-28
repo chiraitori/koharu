@@ -58,9 +58,6 @@ export function Providers({ children }: { children: ReactNode }) {
         receiveStartupState({
           preferences: MOCK_PREFERENCES,
           jobs: [],
-          downloads: [],
-          resources: { devices: [] },
-          project: MOCK_PROJECT,
           canvas: MOCK_CANVAS_STATE,
         })
         receivePreferences(MOCK_PREFERENCES)

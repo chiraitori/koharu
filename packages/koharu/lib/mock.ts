@@ -4,11 +4,11 @@ import { commands } from '@koharu/bridge/protocol'
 import type {
   CanvasState,
   FontFamily,
+  Model,
   Page,
   PageSummary,
   Preferences,
   ProjectInfo,
-  TranslationModelChoice,
 } from '@koharu/bridge/protocol'
 
 export const isBrowserMock =
@@ -43,7 +43,14 @@ export const MOCK_PAGE: Page = {
       type: 'text',
       id: 'layer-1',
       parent: null,
-      geometry: { x: 520, y: 170, width: 155, height: 165 },
+      geometry: {
+        points: [
+          { x: 520, y: 170 },
+          { x: 675, y: 170 },
+          { x: 675, y: 335 },
+          { x: 520, y: 335 },
+        ],
+      },
       angle_degrees: 0,
       visibility: { visible: true, opacity: 1 },
       content: {
@@ -58,20 +65,28 @@ export const MOCK_PAGE: Page = {
         font_weight: 400,
         font_style: 'normal',
         size: 16,
-        color: '#000000',
+        auto_fit: true,
+        color: [0, 0, 0, 255],
         stroke_color: null,
         stroke_width: null,
-        alignment: 'center',
-        writing_mode: 'horizontal',
+        alignment: 'Center',
+        writing_mode: 'Horizontal',
       },
-      layout: 'box',
+      layout: 'paragraph',
       automatic_region: null,
     },
     {
       type: 'text',
       id: 'layer-2',
       parent: null,
-      geometry: { x: 35, y: 220, width: 155, height: 175 },
+      geometry: {
+        points: [
+          { x: 35, y: 220 },
+          { x: 190, y: 220 },
+          { x: 190, y: 395 },
+          { x: 35, y: 395 },
+        ],
+      },
       angle_degrees: 0,
       visibility: { visible: true, opacity: 1 },
       content: {
@@ -86,20 +101,28 @@ export const MOCK_PAGE: Page = {
         font_weight: 400,
         font_style: 'normal',
         size: 14,
-        color: '#000000',
+        auto_fit: true,
+        color: [0, 0, 0, 255],
         stroke_color: null,
         stroke_width: null,
-        alignment: 'center',
-        writing_mode: 'horizontal',
+        alignment: 'Center',
+        writing_mode: 'Horizontal',
       },
-      layout: 'box',
+      layout: 'paragraph',
       automatic_region: null,
     },
     {
       type: 'text',
       id: 'layer-3',
       parent: null,
-      geometry: { x: 40, y: 725, width: 275, height: 90 },
+      geometry: {
+        points: [
+          { x: 40, y: 725 },
+          { x: 315, y: 725 },
+          { x: 315, y: 815 },
+          { x: 40, y: 815 },
+        ],
+      },
       angle_degrees: 0,
       visibility: { visible: true, opacity: 1 },
       content: {
@@ -114,20 +137,28 @@ export const MOCK_PAGE: Page = {
         font_weight: 700,
         font_style: 'normal',
         size: 15,
-        color: '#000000',
+        auto_fit: true,
+        color: [0, 0, 0, 255],
         stroke_color: null,
         stroke_width: null,
-        alignment: 'center',
-        writing_mode: 'horizontal',
+        alignment: 'Center',
+        writing_mode: 'Horizontal',
       },
-      layout: 'box',
+      layout: 'paragraph',
       automatic_region: null,
     },
     {
       type: 'text',
       id: 'layer-4',
       parent: null,
-      geometry: { x: 25, y: 25, width: 220, height: 35 },
+      geometry: {
+        points: [
+          { x: 25, y: 25 },
+          { x: 245, y: 25 },
+          { x: 245, y: 60 },
+          { x: 25, y: 60 },
+        ],
+      },
       angle_degrees: 0,
       visibility: { visible: true, opacity: 1 },
       content: {
@@ -142,13 +173,14 @@ export const MOCK_PAGE: Page = {
         font_weight: 700,
         font_style: 'normal',
         size: 14,
-        color: '#000000',
+        auto_fit: true,
+        color: [0, 0, 0, 255],
         stroke_color: null,
         stroke_width: null,
-        alignment: 'left',
-        writing_mode: 'horizontal',
+        alignment: 'Start',
+        writing_mode: 'Horizontal',
       },
-      layout: 'box',
+      layout: 'paragraph',
       automatic_region: null,
     },
     {
@@ -156,7 +188,7 @@ export const MOCK_PAGE: Page = {
       id: 'layer-cleanup',
       parent: null,
       name: 'Inpainting / Cleanup',
-      kind: 'inpainting',
+      kind: 'cleanup',
       image: null,
       visibility: { visible: true, opacity: 1 },
     },
@@ -164,7 +196,14 @@ export const MOCK_PAGE: Page = {
       type: 'artwork',
       id: 'layer-artwork',
       parent: null,
-      geometry: { x: 0, y: 0, width: 723, height: 1024 },
+      geometry: {
+        points: [
+          { x: 0, y: 0 },
+          { x: 723, y: 0 },
+          { x: 723, y: 1024 },
+          { x: 0, y: 1024 },
+        ],
+      },
       image: '/showcase/31.png',
       visibility: { visible: true, opacity: 1 },
     },
@@ -197,11 +236,39 @@ export const MOCK_CANVAS_STATE: CanvasState = {
   ],
 }
 
-export const MOCK_MODELS: TranslationModelChoice[] = [
-  { id: 'qwen3.8-27b-uncensored', name: 'Qwen 3.8 27B Uncensored', provider: 'local' },
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'gemini' },
-  { id: 'claude-3-7-sonnet', name: 'Claude 3.7 Sonnet', provider: 'claude' },
-  { id: 'deepseek-v3', name: 'DeepSeek V3', provider: 'deepseek' },
+export const MOCK_MODELS: Model[] = [
+  {
+    provider: 'local',
+    model: 'qwen3.8-27b-uncensored',
+    name: 'Qwen 3.8 27B Uncensored',
+    quantizations: [],
+    vision: true,
+    reasoning: true,
+  },
+  {
+    provider: 'gemini',
+    model: 'gemini-2.5-flash',
+    name: 'Gemini 2.5 Flash',
+    quantizations: [],
+    vision: true,
+    reasoning: true,
+  },
+  {
+    provider: 'claude',
+    model: 'claude-3-7-sonnet',
+    name: 'Claude 3.7 Sonnet',
+    quantizations: [],
+    vision: true,
+    reasoning: true,
+  },
+  {
+    provider: 'deepseek',
+    model: 'deepseek-v3',
+    name: 'DeepSeek V3',
+    quantizations: [],
+    vision: false,
+    reasoning: true,
+  },
 ]
 
 export const MOCK_FONTS: FontFamily[] = [
@@ -255,11 +322,17 @@ export const MOCK_FONTS: FontFamily[] = [
 
 export const MOCK_PREFERENCES: Preferences = {
   pipeline: {
-    detection: 'koharu-layout-rfdetr-seg-2xl',
-    ocr: 'paddleocr-vl-1.6',
-    inpainting: 'lama',
+    detection: {
+      model: 'koharu-layout-rfdetr-seg-2xl',
+      text_threshold: 0.5,
+      bubble_threshold: 0.5,
+      panel_threshold: 0.5,
+    },
+    ocr: { model: 'paddleocr-vl-1.6' },
+    inpainting: { model: 'lama' },
     translation: {
       target_language: 'en-US',
+      instructions: null,
       model: {
         provider: 'local',
         model: 'qwen3.8-27b-uncensored',
@@ -286,20 +359,7 @@ export const MOCK_PREFERENCES: Preferences = {
     },
   },
   providers: {
-    'atlas-cloud': {},
-    caiyun: {},
-    claude: {},
-    deepl: {},
-    deepseek: {},
-    gemini: {},
-    'google-cloud-translation': {},
-    grok: {},
-    'lm-studio': { base_url: 'http://localhost:1234/' },
-    local: {},
-    minimax: {},
-    openai: {},
-    'openai-compatible': { base_url: 'http://localhost:11434/v1' },
-    openrouter: {},
+    entries: [],
   },
   typesetting: {
     font_families: ['CCWildWords', 'Anime Ace'],
@@ -309,10 +369,10 @@ export const MOCK_PREFERENCES: Preferences = {
     port: 9999,
   },
   languages: [
-    { code: 'vi-VN', name: 'Tiếng Việt' },
-    { code: 'en-US', name: 'English' },
-    { code: 'ja-JP', name: '日本語' },
-    { code: 'zh-CN', name: '简体中文' },
+    { tag: 'en-US', name: 'English' },
+    { tag: 'vi-VN', name: 'Tiếng Việt' },
+    { tag: 'ja-JP', name: '日本語' },
+    { tag: 'zh-CN', name: '简体中文' },
   ],
 }
 
@@ -355,7 +415,7 @@ export async function handleMockCommand(command: unknown, args: unknown[]): Prom
       ],
       config: {
         model: 'gpt-4o',
-        reasoning: 'standard',
+        reasoning: 'low',
       },
       running: null,
     }
