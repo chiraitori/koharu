@@ -1,5 +1,16 @@
 'use client'
 
+function getSafeWindow() {
+  if (typeof window === 'undefined' || !(window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__) {
+    return null
+  }
+  try {
+    return getCurrentWindow()
+  } catch {
+    return null
+  }
+}
+
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Copy, Minus, Square, X } from 'lucide-react'
 import { useEffect, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
@@ -34,7 +45,8 @@ export function WindowControls() {
   const [maximized, setMaximized] = useState(false)
 
   useEffect(() => {
-    const window = getCurrentWindow()
+    const window = getSafeWindow()
+    if (!window) return
     let disposed = false
     let unlisten: (() => void) | undefined
     const synchronize = () => {
@@ -57,7 +69,8 @@ export function WindowControls() {
   }, [])
 
   const toggleMaximize = async () => {
-    const window = getCurrentWindow()
+    const window = getSafeWindow()
+    if (!window) return
     await window.toggleMaximize()
     setMaximized(await window.isMaximized())
   }
@@ -68,7 +81,7 @@ export function WindowControls() {
       <div className='flex h-full shrink-0'>
         <WindowButton
           label={t('window.minimize')}
-          onClick={() => void getCurrentWindow().minimize()}
+          onClick={() => void getSafeWindow()?.minimize()}
         >
           <Minus />
         </WindowButton>
@@ -81,7 +94,7 @@ export function WindowControls() {
         <WindowButton
           label={t('window.close')}
           className='hover:text-destructive-foreground hover:bg-destructive'
-          onClick={() => void getCurrentWindow().close()}
+          onClick={() => void getSafeWindow()?.close()}
         >
           <X />
         </WindowButton>
@@ -97,7 +110,7 @@ function WindowResizeHandles() {
       if (event.button !== 0) return
       event.preventDefault()
       event.stopPropagation()
-      void getCurrentWindow()
+      void getSafeWindow()?
         .startResizeDragging(direction)
         .catch(() => undefined)
     }

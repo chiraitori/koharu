@@ -42,6 +42,12 @@ export function Providers({ children }: { children: ReactNode }) {
     lifecycle.active = true
     if (!lifecycle.bound) {
       lifecycle.bound = true
+      if (typeof window === 'undefined' || !(window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__) {
+        setTimeout(() => {
+          useKoharuStore.setState({ initialized: true })
+        }, 300)
+        return
+      }
       const completed = new Map<string, number>()
       const channel = <T,>(receive: (value: T) => void) =>
         new Channel<T>((value) => {
