@@ -70,7 +70,7 @@ export function TitleBar() {
             <Image
               className='pointer-events-none'
               src='/icon.png'
-              alt='Koharu'
+              alt='kore-minit'
               width={17}
               height={17}
               draggable={false}
@@ -264,7 +264,7 @@ export function TitleBar() {
               )}
             </span>
           ) : (
-            <span>Koharu</span>
+            <span>kore-minit</span>
           )}
         </div>
 

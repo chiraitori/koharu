@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/536664d1b34e1989dbd22705e2fde8b57b36aa0c/crates/tauri-schema-generator/schemas/config.schema.json",
-  "identifier": "Koharu",
+  "productName": "kore-minit",
+  "identifier": "kore-minit",
   "build": {
     "devUrl": "http://localhost:3000",
     "frontendDist": "../../packages/koharu/out",
@@ -21,7 +22,7 @@
         "minWidth": 900,
         "minHeight": 600,
         "center": true,
-        "title": "Koharu",
+        "title": "kore-minit",
         "decorations": false,
         "transparent": false,
         "visible": false

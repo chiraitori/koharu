@@ -55,7 +55,8 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: koharu-${{ matrix.os }}
+          name: kore-minit-${{ matrix.os }}
           path: |
+            target/release/kore-minit*
             target/release/koharu*
           retention-days: 3

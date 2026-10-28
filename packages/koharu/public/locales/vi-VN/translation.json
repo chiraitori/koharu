@@ -29,14 +29,14 @@
     "cancel": "Huỷ",
     "cancelled": "Đã huỷ.",
     "deviceCode": "Mã thiết bị",
-    "deviceCodeHint": "Trình duyệt đã mở. Hãy nhập mã này để cấp quyền cho Koharu.",
+    "deviceCodeHint": "Trình duyệt đã mở. Hãy nhập mã này để cấp quyền cho kore-minit.",
     "emptyDescription": "Yêu cầu agent kiểm tra, dịch, chỉnh sửa hoặc xử lý dự án. Agent chỉ xem ảnh khi cần thiết.",
-    "emptyTitle": "Koharu có thể giúp gì cho bạn?",
+    "emptyTitle": "kore-minit có thể giúp gì cho bạn?",
     "failed": "Yêu cầu agent thất bại.",
     "loading": "Đang tải Codex...",
-    "message": "Gửi tin nhắn cho Koharu Agent",
+    "message": "Gửi tin nhắn cho kore-minit Agent",
     "model": "Mô hình Codex",
-    "placeholder": "Yêu cầu Koharu thực hiện trên dự án này...",
+    "placeholder": "Yêu cầu kore-minit thực hiện trên dự án này...",
     "properties": "Thuộc tính",
     "reasoning": "Suy luận",
     "reasoningLevels": {
@@ -49,7 +49,7 @@
     },
     "send": "Gửi",
     "signIn": "Đăng nhập với Codex",
-    "signInDescription": "Đăng nhập bằng tài khoản ChatGPT của bạn. Koharu xác thực qua mã thiết bị và không bao giờ yêu cầu API key.",
+    "signInDescription": "Đăng nhập bằng tài khoản ChatGPT của bạn. kore-minit xác thực qua mã thiết bị và không bao giờ yêu cầu API key.",
     "signInTitle": "Kết nối Codex",
     "signOut": "Đăng xuất",
     "signingIn": "Đang chờ đăng nhập...",
@@ -72,7 +72,7 @@
   "canvas": {
     "empty": "Chọn một trang để bắt đầu.",
     "fit": "Vừa cửa sổ",
-    "surface": "Khung vẽ Koharu",
+    "surface": "Khung vẽ kore-minit",
     "unavailable": "Khung vẽ WebGPU không khả dụng"
   },
   "colorPicker": {
@@ -89,7 +89,7 @@
     "reset": "Đặt lại"
   },
   "errors": {
-    "fatalTitle": "Koharu không thể tiếp tục",
+    "fatalTitle": "kore-minit không thể tiếp tục",
     "tryAgain": "Thử lại"
   },
   "fontPicker": {
@@ -453,9 +453,9 @@
     },
     "mcp": {
       "active": "Đang chạy",
-      "clientsDesc": "Thêm cấu hình này vào trợ lý AI yêu thích để kết nối với Koharu.",
+      "clientsDesc": "Thêm cấu hình này vào trợ lý AI yêu thích để kết nối với kore-minit.",
       "clientsTitle": "Cấu hình AI Client & Snippets",
-      "description": "Mở giao tiếp công cụ Koharu qua HTTP/SSE cục bộ cho các trợ lý AI (Google Antigravity, Claude Desktop, Cursor, OpenCode).",
+      "description": "Mở giao tiếp công cụ kore-minit qua HTTP/SSE cục bộ cho các trợ lý AI (Google Antigravity, Claude Desktop, Cursor, OpenCode).",
       "enableDesc": "Chạy máy chủ MCP nhúng lắng nghe trên localhost.",
       "enableTitle": "Bật MCP Server",
       "endpointDesc": "Địa chỉ HTTP/SSE tiêu chuẩn cho các AI client.",
@@ -519,7 +519,7 @@
     "projectList": "Danh sách dự án",
     "projectName": "Tên dự án",
     "projectNamePlaceholder": "Nhập tên dự án…",
-    "storageHint": "Dự án được lưu trữ an toàn trong thư viện Koharu.",
+    "storageHint": "Dự án được lưu trữ an toàn trong thư viện kore-minit.",
     "title": "Bắt đầu",
     "yourProjects": "Dự án của bạn"
   },
@@ -527,7 +527,7 @@
     "description": "Đang chuẩn bị môi trường làm việc…",
     "opening": "Đang mở dự án…",
     "status": "Đang tải…",
-    "title": "Đang khởi động Koharu"
+    "title": "Đang khởi động kore-minit"
   },
   "status": {
     "zoom": "Thu phóng"
@@ -554,7 +554,7 @@
     },
     "close": "Đóng",
     "downloading": {
-      "subtitle": "Koharu {{version}}",
+      "subtitle": "kore-minit {{version}}",
       "title": "Đang tải bản cập nhật…"
     },
     "error": {

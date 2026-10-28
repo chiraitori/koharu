@@ -32,7 +32,7 @@ export function StartupView() {
           )}
         </div>
         <div className='grid h-full place-items-center text-[11px] text-muted-foreground select-none'>
-          Koharu
+          kore-minit
         </div>
         {!macOS && <WindowControls />}
       </header>

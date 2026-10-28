@@ -29,14 +29,14 @@
     "cancel": "Cancel",
     "cancelled": "Cancelled.",
     "deviceCode": "Device code",
-    "deviceCodeHint": "Your browser has opened. Enter this code to authorize Koharu.",
+    "deviceCodeHint": "Your browser has opened. Enter this code to authorize kore-minit.",
     "emptyDescription": "Ask the agent to inspect, translate, edit, or process this project. It will view page images only when needed.",
-    "emptyTitle": "What should Koharu do?",
+    "emptyTitle": "What should kore-minit do?",
     "failed": "The agent request failed.",
     "loading": "Loading Codex...",
-    "message": "Message Koharu Agent",
+    "message": "Message kore-minit Agent",
     "model": "Codex model",
-    "placeholder": "Ask Koharu to work on this project...",
+    "placeholder": "Ask kore-minit to work on this project...",
     "properties": "Properties",
     "reasoning": "Reasoning",
     "reasoningLevels": {
@@ -49,7 +49,7 @@
     },
     "send": "Send",
     "signIn": "Sign in with Codex",
-    "signInDescription": "Sign in with your ChatGPT subscription. Koharu uses device-code authentication and never asks for an API key.",
+    "signInDescription": "Sign in with your ChatGPT subscription. kore-minit uses device-code authentication and never asks for an API key.",
     "signInTitle": "Connect Codex",
     "signOut": "Sign out",
     "signingIn": "Waiting for sign-in...",
@@ -72,7 +72,7 @@
   "canvas": {
     "empty": "Select a page to begin.",
     "fit": "Fit Window",
-    "surface": "Koharu canvas",
+    "surface": "kore-minit canvas",
     "unavailable": "WebGPU canvas unavailable"
   },
   "colorPicker": {
@@ -89,7 +89,7 @@
     "reset": "Reset"
   },
   "errors": {
-    "fatalTitle": "Koharu could not continue",
+    "fatalTitle": "kore-minit could not continue",
     "tryAgain": "Try again"
   },
   "fontPicker": {
@@ -453,9 +453,9 @@
     },
     "mcp": {
       "active": "Running",
-      "clientsDesc": "Add one of these configurations to your preferred AI assistant to connect it to Koharu.",
+      "clientsDesc": "Add one of these configurations to your preferred AI assistant to connect it to kore-minit.",
       "clientsTitle": "Client Setup & Snippets",
-      "description": "Expose Koharu tools over local Streamable HTTP / SSE for AI client automation (Google Antigravity, Claude Desktop, Cursor, OpenCode).",
+      "description": "Expose kore-minit tools over local Streamable HTTP / SSE for AI client automation (Google Antigravity, Claude Desktop, Cursor, OpenCode).",
       "enableDesc": "Runs an embedded MCP server listening on localhost.",
       "enableTitle": "Enable MCP Server",
       "endpointDesc": "Standard HTTP/SSE endpoint for clients.",
@@ -492,10 +492,10 @@
       "addFamily": "Add font family",
       "defaultFamilies": "Default font families",
       "description": "Set the ordered font stack used when a text layer has no assigned family.",
-      "empty": "No default families. Koharu will use the system fallback.",
+      "empty": "No default families. kore-minit will use the system fallback.",
       "familyLabel": "Default font family {{index}}",
       "fontFallback": "Font fallback",
-      "fontFallbackDescription": "Koharu uses the first available family that supports the text.",
+      "fontFallbackDescription": "kore-minit uses the first available family that supports the text.",
       "loadError": "Fonts could not be loaded. Existing families can still be removed.",
       "loadingFonts": "Loading fonts…",
       "removeFamily": "Remove {{family}}",
@@ -515,7 +515,7 @@
     "loadingProjects": "Loading projects…",
     "newDescription": "Create a clean workspace for your pages, translations, and exports.",
     "newProject": "New project",
-    "projectKind": "Koharu project",
+    "projectKind": "kore-minit project",
     "projectList": "Projects",
     "projectName": "Project name",
     "projectNamePlaceholder": "My new project",
@@ -525,9 +525,9 @@
   },
   "startup": {
     "description": "Loading local AI runtimes and preparing the workspace. First launch can take a moment.",
-    "opening": "Opening Koharu…",
+    "opening": "Opening kore-minit…",
     "status": "Initializing local runtimes",
-    "title": "Preparing Koharu"
+    "title": "Preparing kore-minit"
   },
   "status": {
     "zoom": "Zoom"
@@ -549,12 +549,12 @@
   },
   "updater": {
     "available": {
-      "description": "Koharu <strong>{{version}}</strong> is ready to install",
+      "description": "kore-minit <strong>{{version}}</strong> is ready to install",
       "title": "Update available"
     },
     "close": "Close",
     "downloading": {
-      "subtitle": "Koharu {{version}}",
+      "subtitle": "kore-minit {{version}}",
       "title": "Downloading update…"
     },
     "error": {
