@@ -11,14 +11,25 @@ import ClientOnly from '@/components/ClientOnly'
 import { toolActionDescription } from '@/components/editor/AgentPanel'
 import { refreshTranslationModels } from '@/lib/backend'
 import i18n from '@/lib/i18n'
+import {
+  MOCK_CANVAS_STATE,
+  MOCK_FONTS,
+  MOCK_MODELS,
+  MOCK_PAGE,
+  MOCK_PAGES,
+  MOCK_PREFERENCES,
+  MOCK_PROJECT,
+} from '@/lib/mock'
 import { initTheme } from '@/lib/theme'
-import { pageKey, pagesKey, projectKey, queryClient, refresh } from '@/lib/queries'
+import { fontsKey, pageKey, pagesKey, projectKey, queryClient, refresh } from '@/lib/queries'
 import {
   receiveCanvas,
   receiveDownload,
+  receivePreferences,
   receiveStartupState,
   receiveJob,
   receiveResources,
+  receiveTranslationModels,
   useKoharuStore,
 } from '@/lib/store'
 import {
@@ -43,9 +54,25 @@ export function Providers({ children }: { children: ReactNode }) {
     if (!lifecycle.bound) {
       lifecycle.bound = true
       if (typeof window === 'undefined' || !(window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__) {
-        setTimeout(() => {
-          useKoharuStore.setState({ initialized: true })
-        }, 300)
+        receiveStartupState({
+          preferences: MOCK_PREFERENCES,
+          jobs: [],
+          downloads: [],
+          resources: { devices: [] },
+          project: MOCK_PROJECT,
+          canvas: MOCK_CANVAS_STATE,
+        })
+        receivePreferences(MOCK_PREFERENCES)
+        receiveCanvas(MOCK_CANVAS_STATE)
+        receiveTranslationModels(MOCK_MODELS)
+        queryClient.setQueryData(projectKey, MOCK_PROJECT)
+        queryClient.setQueryData(pagesKey, MOCK_PAGES)
+        queryClient.setQueryData(pageKey, MOCK_PAGE)
+        queryClient.setQueryData(fontsKey, MOCK_FONTS)
+        const store = useKoharuStore.getState()
+        store.selectPages(['page-31'])
+        store.selectLayers(['layer-1'])
+        useKoharuStore.setState({ initialized: true })
         return
       }
       const completed = new Map<string, number>()

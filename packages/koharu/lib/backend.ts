@@ -9,6 +9,7 @@ import type {
   TypesettingConfig,
 } from '@koharu/bridge/protocol'
 
+import { handleMockCommand, isBrowserMock } from './mock'
 import { receiveError, receivePreferences, receiveTranslationModels } from './store'
 
 type Command<Args extends unknown[], Result> = (...args: Args) => Promise<Result>
@@ -22,6 +23,12 @@ export async function call<Args extends unknown[], Result>(
   command: Command<Args, Result>,
   ...args: Args
 ): Promise<Result> {
+  if (isBrowserMock) {
+    const mockResult = await handleMockCommand(command, args)
+    if (mockResult !== undefined) {
+      return mockResult as Result
+    }
+  }
   try {
     return await command(...args)
   } catch (error) {

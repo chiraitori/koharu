@@ -41,6 +41,7 @@ import {
 } from '@/lib/store'
 import { prefetchCanvasPages, workspaceColor, type CanvasColor } from '@koharu/bridge/canvas'
 import { commands, type Frame, type Point, type TransformFrame } from '@koharu/bridge/protocol'
+import { isBrowserMock } from '@/lib/mock'
 import { Button } from '@koharu/ui/components/button'
 
 const BRUSH_DIAMETER_STEP = 4
@@ -243,9 +244,11 @@ export function CanvasWorkspace() {
 
   const report = useCallback(() => {
     const element = surface.current
-    if (!element || !canvas) return
-    const bounds = element.getBoundingClientRect()
-    canvas.resize(bounds.width, bounds.height, window.devicePixelRatio, workspaceColor())
+    if (!element) return
+    if (canvas) {
+      const bounds = element.getBoundingClientRect()
+      canvas.resize(bounds.width, bounds.height, window.devicePixelRatio, workspaceColor())
+    }
     if (useKoharuStore.getState().camera.fitted) fitCanvas()
   }, [canvas, fitCanvas])
 
@@ -836,7 +839,28 @@ export function CanvasWorkspace() {
             aria-hidden
             className='pointer-events-none absolute inset-0 block size-full'
           />
-          {page && canvasState.status === 'ready' && (
+          {page && (isBrowserMock || !canvasState.hasFrame) && (
+            <div
+              className='pointer-events-none absolute select-none'
+              style={{
+                left: camera.translation[0] / window.devicePixelRatio,
+                top: camera.translation[1] / window.devicePixelRatio,
+                width: ((pageWidth ?? 723) * camera.zoom) / window.devicePixelRatio,
+                height: ((pageHeight ?? 1024) * camera.zoom) / window.devicePixelRatio,
+              }}
+            >
+              <img
+                src={
+                  (page.layers.find((l) => l.type === 'artwork' && 'image' in l && l.image) as { image: string } | undefined)?.image ||
+                  '/showcase/31.png'
+                }
+                alt={page.label}
+                className='block size-full rounded-sm object-contain shadow-2xl'
+                draggable={false}
+              />
+            </div>
+          )}
+          {page && (canvasState.status === 'ready' || isBrowserMock) && (
             <CanvasOverlay
               page={page}
               selected={selected}
@@ -852,7 +876,7 @@ export function CanvasWorkspace() {
               onTransformEnd={finishTransform}
             />
           )}
-          {page && canvasState.status === 'error' && (
+          {page && !isBrowserMock && canvasState.status === 'error' && (
             <div
               role='alert'
               className={
