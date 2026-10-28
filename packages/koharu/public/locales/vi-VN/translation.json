@@ -388,9 +388,9 @@
       "applyAndSave": "Áp dụng & Lưu",
       "cancel": "Hủy",
       "themePresets": {
-        "default": "Koharu Pink (Mặc định)",
+        "default": "Koharu Pink (Gốc)",
         "defaultDesc": "Tông màu hồng hoa anh đào nguyên bản.",
-        "nahida-sage": "Nahida Sage (Thảo Mộc)",
+        "nahida-sage": "Nahida Sage (Mặc định)",
         "nahida-sageDesc": "Tông xanh lá ngọc bích hài hòa cùng icon Nahida.",
         "midnight-obsidian": "Midnight Obsidian (Đen Tuyền)",
         "midnight-obsidianDesc": "Chế độ tối AMOLED sâu thẳm, viền xám tinh tế.",

@@ -16,17 +16,8 @@ export interface ThemeDefinition {
 
 export const BUILTIN_THEMES: ThemeDefinition[] = [
   {
-    id: 'default',
-    name: 'Koharu Pink (Mặc định)',
-    author: 'Mayo Takanashi',
-    version: '1.0',
-    description: 'Tông màu hồng hoa anh đào nguyên bản.',
-    light: {},
-    dark: {},
-  },
-  {
     id: 'nahida-sage',
-    name: 'Nahida Sage (Thảo Mộc)',
+    name: 'Nahida Sage (Mặc định)',
     author: 'chiraitori',
     version: '1.0',
     description: 'Tông xanh lá ngọc bích hài hòa cùng icon Nahida.',
@@ -58,6 +49,15 @@ export const BUILTIN_THEMES: ThemeDefinition[] = [
       '--border': '#1b2922',
       '--canvas-selection': '#52b788',
     },
+  },
+  {
+    id: 'default',
+    name: 'Koharu Pink (Gốc)',
+    author: 'Mayo Takanashi',
+    version: '1.0',
+    description: 'Tông màu hồng hoa anh đào nguyên bản.',
+    light: {},
+    dark: {},
   },
   {
     id: 'midnight-obsidian',
@@ -140,7 +140,7 @@ export function getActiveThemeId(): string {
 export function getActiveTheme(): ThemeDefinition {
   const activeId = getActiveThemeId()
   const all = getAllThemes()
-  return all.find((t) => t.id === activeId) || BUILTIN_THEMES[1] || BUILTIN_THEMES[0]
+  return all.find((t) => t.id === activeId) || BUILTIN_THEMES[0]
 }
 
 export function applyTheme(theme: ThemeDefinition): void {

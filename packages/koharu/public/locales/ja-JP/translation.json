@@ -388,10 +388,10 @@
       "applyAndSave": "適用して保存",
       "cancel": "キャンセル",
       "themePresets": {
-        "default": "Koharu Pink (デフォルト)",
+        "default": "Koharu Pink (オリジナル)",
         "defaultDesc": "オリジナルの桜ピンクテーマ。",
-        "nahida-sage": "ナヒーダ・セージ",
-        "nahida-sageDesc": "ナヒーダのアイコンに合わせたエメラルド＆セージグリーン調。",
+        "nahida-sage": "Nahida Sage (デフォルト)",
+        "nahida-sageDesc": "ナヒーダアイコンに調和するエメラルドセージグリーン。",
         "midnight-obsidian": "ミッドナイト・オブシディアン",
         "midnight-obsidianDesc": "深い黒のAMOLEDダークモード。",
         "cyber-neon": "サイバーネオン",
