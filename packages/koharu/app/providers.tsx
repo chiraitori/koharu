@@ -54,6 +54,7 @@ export function Providers({ children }: { children: ReactNode }) {
     if (!lifecycle.bound) {
       lifecycle.bound = true
       if (typeof window === 'undefined' || !(window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__) {
+        void i18n.changeLanguage('en-US')
         receiveStartupState({
           preferences: MOCK_PREFERENCES,
           jobs: [],

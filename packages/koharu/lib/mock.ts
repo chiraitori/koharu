@@ -49,7 +49,7 @@ export const MOCK_PAGE: Page = {
       content: {
         id: 'content-1',
         source: { text: 'ダメ…かな…？', language: 'ja' },
-        translation: { text: 'KHÔNG ĐƯỢC SAO...?', language: 'vi' },
+        translation: { text: 'IS IT... NOT OKAY...?', language: 'en' },
         role: 'dialogue',
         source_region: null,
       },
@@ -77,7 +77,7 @@ export const MOCK_PAGE: Page = {
       content: {
         id: 'content-2',
         source: { text: '間違いだらけの二人の関係。', language: 'ja' },
-        translation: { text: 'MỐI QUAN HỆ ĐẦY RẪY SAI LẦM CỦA HAI NGƯỜI.', language: 'vi' },
+        translation: { text: 'A RELATIONSHIP BETWEEN TWO PEOPLE FULL OF MISTAKES.', language: 'en' },
         role: 'dialogue',
         source_region: null,
       },
@@ -105,7 +105,7 @@ export const MOCK_PAGE: Page = {
       content: {
         id: 'content-3',
         source: { text: '２巻に続く、ドキドキのデートが始まる！！！', language: 'ja' },
-        translation: { text: 'HẸN GẶP LẠI Ở TẬP 2: BUỔI HẸN HÒ THÓT TIM BẮT ĐẦU!!!', language: 'vi' },
+        translation: { text: 'TO BE CONTINUED IN VOL. 2: THE HEART-POUNDING DATE BEGINS!!!', language: 'en' },
         role: 'dialogue',
         source_region: null,
       },
@@ -133,7 +133,7 @@ export const MOCK_PAGE: Page = {
       content: {
         id: 'content-4',
         source: { text: '紅葉と黄葉', language: 'ja' },
-        translation: { text: 'MOMIJI TO KOUYOU', language: 'vi' },
+        translation: { text: 'MOMIJI TO KOUYOU', language: 'en' },
         role: 'dialogue',
         source_region: null,
       },
@@ -259,7 +259,7 @@ export const MOCK_PREFERENCES: Preferences = {
     ocr: 'paddleocr-vl-1.6',
     inpainting: 'lama',
     translation: {
-      target_language: 'vi-VN',
+      target_language: 'en-US',
       model: {
         provider: 'local',
         model: 'qwen3.8-27b-uncensored',
