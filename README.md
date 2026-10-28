@@ -7,7 +7,7 @@
 <p align="center">Local-first manga and comic translation studio, written in Rust and Next.js / Tauri.</p>
 
 <p align="center">
-  <a href="https://github.com/chiraitori/koharu/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/chiraitori/koharu?style=flat-square"></a>
+  <a href="https://github.com/chiraitori/kore-minit/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/chiraitori/kore-minit?style=flat-square"></a>
   <a href="LICENSE-MIT"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square"></a>
   <a href="LICENSE-APACHE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square"></a>
 </p>
@@ -64,7 +64,7 @@ Graphics driver requirements and supported acceleration backends:
 
 ## Installation
 
-Download pre-built binaries for Windows, macOS, or Linux from the [Releases page](https://github.com/chiraitori/koharu/releases/latest).
+Download pre-built binaries for Windows, macOS, or Linux from the [Releases page](https://github.com/chiraitori/kore-minit/releases/latest).
 
 ### Windows
 
@@ -90,8 +90,8 @@ Download the `.AppImage` or `.deb` package.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/chiraitori/koharu.git
-   cd koharu
+   git clone https://github.com/chiraitori/kore-minit.git
+   cd kore-minit
    ```
 
 2. Install dependencies:
