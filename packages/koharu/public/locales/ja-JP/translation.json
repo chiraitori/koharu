@@ -375,7 +375,43 @@
         "light": "ライト",
         "system": "システム"
       },
-      "title": "外観"
+      "title": "外観",
+      "customTheme": "カスタムテーマ & JSONパレット",
+      "customThemeDescription": "プリセットパレットを選択するか、JSONファイルでインターフェースの色をカスタマイズします。",
+      "importJson": "JSONをインポート",
+      "exportJson": "JSONをエクスポート",
+      "editJson": "JSONを編集",
+      "createTheme": "新規作成",
+      "deleteTheme": "テーマを削除",
+      "editorTitle": "テーマJSONの編集",
+      "editorDescription": "lightおよびdarkセクションでCSSカラー変数をカスタマイズします。",
+      "applyAndSave": "適用して保存",
+      "cancel": "キャンセル",
+      "themePresets": {
+        "default": "Koharu Pink (デフォルト)",
+        "defaultDesc": "オリジナルの桜ピンクテーマ。",
+        "nahida-sage": "ナヒーダ・セージ",
+        "nahida-sageDesc": "ナヒーダのアイコンに合わせたエメラルド＆セージグリーン調。",
+        "midnight-obsidian": "ミッドナイト・オブシディアン",
+        "midnight-obsidianDesc": "深い黒のAMOLEDダークモード。",
+        "cyber-neon": "サイバーネオン",
+        "cyber-neonDesc": "深い紫とシアンネオンのフューチャリスティックテーマ。"
+      },
+      "toasts": {
+        "themeChanged": "テーマを変更しました",
+        "applying": "適用中: {{name}}",
+        "importSuccess": "テーマのインポートに成功しました",
+        "importSuccessDesc": "インストール済み: {{name}}",
+        "importError": "テーマファイルを読み込めませんでした",
+        "exportSuccess": "テーマのエクスポートに成功しました",
+        "exportSuccessDesc": "{{file}} をダウンロードしました",
+        "exportError": "エクスポートに失敗しました",
+        "saveSuccess": "テーマを保存しました",
+        "saveSuccessDesc": "テーマ「{{name}}」を保存し、適用しました。",
+        "deleteSuccess": "テーマを削除しました",
+        "deleteSuccessDesc": "カスタムテーマを削除しました。",
+        "invalidJson": "無効なJSON構文です"
+      }
     },
     "backToEditor": "エディターに戻る",
     "generation": {

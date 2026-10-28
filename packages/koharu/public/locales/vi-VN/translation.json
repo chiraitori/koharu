@@ -375,7 +375,43 @@
         "light": "Sáng",
         "system": "Hệ thống"
       },
-      "title": "Giao diện"
+      "title": "Giao diện",
+      "customTheme": "Bảng màu & Theme JSON",
+      "customThemeDescription": "Chọn bảng màu có sẵn hoặc tùy biến màu sắc giao diện bằng file JSON.",
+      "importJson": "Nhập JSON",
+      "exportJson": "Xuất JSON",
+      "editJson": "Sửa JSON",
+      "createTheme": "Tạo mới",
+      "deleteTheme": "Xóa theme",
+      "editorTitle": "Chỉnh sửa Theme JSON",
+      "editorDescription": "Tùy biến các biến màu CSS trong các mục light và dark.",
+      "applyAndSave": "Áp dụng & Lưu",
+      "cancel": "Hủy",
+      "themePresets": {
+        "default": "Koharu Pink (Mặc định)",
+        "defaultDesc": "Tông màu hồng hoa anh đào nguyên bản.",
+        "nahida-sage": "Nahida Sage (Thảo Mộc)",
+        "nahida-sageDesc": "Tông xanh lá ngọc bích hài hòa cùng icon Nahida.",
+        "midnight-obsidian": "Midnight Obsidian (Đen Tuyền)",
+        "midnight-obsidianDesc": "Chế độ tối AMOLED sâu thẳm, viền xám tinh tế.",
+        "cyber-neon": "Cyber Neon (Tím & Cyan)",
+        "cyber-neonDesc": "Phong cách tương lai với nền tím thẫm và điểm nhấn neon cyan."
+      },
+      "toasts": {
+        "themeChanged": "Đã đổi theme",
+        "applying": "Đang áp dụng: {{name}}",
+        "importSuccess": "Nhập theme thành công",
+        "importSuccessDesc": "Đã cài đặt theme: {{name}}",
+        "importError": "Không thể đọc file theme",
+        "exportSuccess": "Xuất theme thành công",
+        "exportSuccessDesc": "Đã tải về file {{file}}",
+        "exportError": "Lỗi xuất file",
+        "saveSuccess": "Đã lưu theme",
+        "saveSuccessDesc": "Theme \"{{name}}\" đã được lưu và kích hoạt.",
+        "deleteSuccess": "Đã xóa theme",
+        "deleteSuccessDesc": "Theme tùy biến đã được xóa.",
+        "invalidJson": "Cú pháp JSON không hợp lệ"
+      }
     },
     "backToEditor": "Quay lại trình chỉnh sửa",
     "generation": {

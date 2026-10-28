@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next'
 
 import {
   exportThemeJson,
-  getActiveTheme,
   getActiveThemeId,
   getAllThemes,
   parseThemeJson,
@@ -48,13 +47,27 @@ export function ThemePreferences() {
   const activeTheme = themes.find((th) => th.id === activeId) || themes[0]
   const isCustom = !BUILTIN_THEMES.some((b) => b.id === activeId)
 
+  const getThemeDisplayName = (th: ThemeDefinition) => {
+    const isBuiltin = BUILTIN_THEMES.some((b) => b.id === th.id)
+    return isBuiltin ? t(`settings.appearance.themePresets.${th.id}`, th.name) : th.name
+  }
+
+  const getThemeDisplayDescription = (th: ThemeDefinition) => {
+    const isBuiltin = BUILTIN_THEMES.some((b) => b.id === th.id)
+    return isBuiltin
+      ? t(`settings.appearance.themePresets.${th.id}Desc`, th.description || '')
+      : th.description
+  }
+
   const handleSelectTheme = (id: string) => {
     setActiveId(id)
     setActiveTheme(id)
+    const target = themes.find((th) => th.id === id)
+    const displayName = target ? getThemeDisplayName(target) : id
     toast.add({
       type: 'info',
-      title: 'Đã đổi theme',
-      description: `Đang áp dụng: ${themes.find((t) => t.id === id)?.name || id}`,
+      title: t('settings.appearance.toasts.themeChanged'),
+      description: t('settings.appearance.toasts.applying', { name: displayName }),
     })
   }
 
@@ -73,14 +86,15 @@ export function ThemePreferences() {
         setActiveId(parsed.id)
         toast.add({
           type: 'success',
-          title: 'Nhập theme thành công',
-          description: `Đã cài đặt theme: ${parsed.name}`,
+          title: t('settings.appearance.toasts.importSuccess'),
+          description: t('settings.appearance.toasts.importSuccessDesc', { name: parsed.name }),
         })
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Lỗi không xác định'
+        const msg =
+          err instanceof Error ? err.message : t('settings.appearance.toasts.invalidJson')
         toast.add({
           type: 'error',
-          title: 'Không thể đọc file theme',
+          title: t('settings.appearance.toasts.importError'),
           description: msg,
         })
       } finally {
@@ -105,14 +119,14 @@ export function ThemePreferences() {
       URL.revokeObjectURL(url)
       toast.add({
         type: 'success',
-        title: 'Xuất theme thành công',
-        description: `Đã tải về file ${fileName}`,
+        title: t('settings.appearance.toasts.exportSuccess'),
+        description: t('settings.appearance.toasts.exportSuccessDesc', { file: fileName }),
       })
     } catch {
       toast.add({
         type: 'error',
-        title: 'Lỗi xuất file',
-        description: 'Không thể tạo file JSON cho theme này.',
+        title: t('settings.appearance.toasts.exportError'),
+        description: 'Failed to export JSON file.',
       })
     }
   }
@@ -124,7 +138,7 @@ export function ThemePreferences() {
         name: 'My Custom Theme',
         author: 'User',
         version: '1.0',
-        description: 'Tùy biến màu sắc cá nhân.',
+        description: 'Custom palette created by user.',
         light: {
           '--primary': '#2d6a4f',
           '--primary-foreground': '#ffffff',
@@ -159,11 +173,12 @@ export function ThemePreferences() {
       setEditorOpen(false)
       toast.add({
         type: 'success',
-        title: 'Đã lưu theme',
-        description: `Theme "${parsed.name}" đã được lưu và kích hoạt.`,
+        title: t('settings.appearance.toasts.saveSuccess'),
+        description: t('settings.appearance.toasts.saveSuccessDesc', { name: parsed.name }),
       })
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Cú pháp JSON không hợp lệ'
+      const msg =
+        err instanceof Error ? err.message : t('settings.appearance.toasts.invalidJson')
       setEditorError(msg)
     }
   }
@@ -176,22 +191,22 @@ export function ThemePreferences() {
     setActiveId(fallbackId)
     toast.add({
       type: 'info',
-      title: 'Đã xóa theme',
-      description: 'Theme tùy biến đã được xóa.',
+      title: t('settings.appearance.toasts.deleteSuccess'),
+      description: t('settings.appearance.toasts.deleteSuccessDesc'),
     })
   }
 
   return (
     <>
       <PreferenceRow
-        title='Bảng màu & Theme JSON'
-        description='Chọn bảng màu có sẵn hoặc tùy biến màu sắc giao diện bằng file JSON.'
+        title={t('settings.appearance.customTheme')}
+        description={t('settings.appearance.customThemeDescription')}
       >
         <div className='flex flex-col gap-2'>
           <div className='flex items-center gap-2'>
             <Select
               value={activeId}
-              items={Object.fromEntries(themes.map((th) => [th.id, th.name]))}
+              items={Object.fromEntries(themes.map((th) => [th.id, getThemeDisplayName(th)]))}
               onValueChange={(val) => val && handleSelectTheme(val)}
             >
               <SelectTrigger className='h-8 w-full text-[11px]'>
@@ -200,7 +215,7 @@ export function ThemePreferences() {
               <SelectContent>
                 {themes.map((th) => (
                   <SelectItem key={th.id} value={th.id}>
-                    {th.name}
+                    {getThemeDisplayName(th)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -212,7 +227,7 @@ export function ThemePreferences() {
                 variant='destructive'
                 size='icon-sm'
                 className='size-8 shrink-0'
-                title='Xóa theme này'
+                title={t('settings.appearance.deleteTheme')}
                 onClick={() => handleDelete(activeId)}
               >
                 <Trash2 className='size-3.5' />
@@ -220,8 +235,10 @@ export function ThemePreferences() {
             )}
           </div>
 
-          {activeTheme.description && (
-            <p className='text-[10px] text-muted-foreground italic'>{activeTheme.description}</p>
+          {getThemeDisplayDescription(activeTheme) && (
+            <p className='text-[10px] text-muted-foreground italic'>
+              {getThemeDisplayDescription(activeTheme)}
+            </p>
           )}
 
           <div className='flex flex-wrap items-center gap-1.5 pt-1'>
@@ -240,7 +257,7 @@ export function ThemePreferences() {
               className='h-7 gap-1 text-[10px]'
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className='size-3' /> Nhập JSON
+              <Upload className='size-3' /> {t('settings.appearance.importJson')}
             </Button>
 
             <Button
@@ -250,7 +267,7 @@ export function ThemePreferences() {
               className='h-7 gap-1 text-[10px]'
               onClick={handleExport}
             >
-              <Download className='size-3' /> Xuất JSON
+              <Download className='size-3' /> {t('settings.appearance.exportJson')}
             </Button>
 
             <Button
@@ -260,7 +277,7 @@ export function ThemePreferences() {
               className='h-7 gap-1 text-[10px]'
               onClick={() => handleOpenEditor(false)}
             >
-              <Code className='size-3' /> Sửa JSON
+              <Code className='size-3' /> {t('settings.appearance.editJson')}
             </Button>
 
             <Button
@@ -270,7 +287,7 @@ export function ThemePreferences() {
               className='h-7 gap-1 text-[10px] text-muted-foreground hover:text-foreground'
               onClick={() => handleOpenEditor(true)}
             >
-              <Plus className='size-3' /> Tạo mới
+              <Plus className='size-3' /> {t('settings.appearance.createTheme')}
             </Button>
           </div>
         </div>
@@ -279,9 +296,11 @@ export function ThemePreferences() {
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
         <DialogContent className='max-w-md gap-3 p-5'>
           <DialogHeader className='gap-1'>
-            <DialogTitle className='text-[14px] font-semibold'>Chỉnh sửa Theme JSON</DialogTitle>
+            <DialogTitle className='text-[14px] font-semibold'>
+              {t('settings.appearance.editorTitle')}
+            </DialogTitle>
             <DialogDescription className='text-[11px] text-muted-foreground'>
-              Tùy biến các biến màu CSS trong các mục <code>light</code> và <code>dark</code>.
+              {t('settings.appearance.editorDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -310,7 +329,7 @@ export function ThemePreferences() {
               className='text-[11px]'
               onClick={() => setEditorOpen(false)}
             >
-              Hủy
+              {t('settings.appearance.cancel')}
             </Button>
             <Button
               type='button'
@@ -319,7 +338,7 @@ export function ThemePreferences() {
               className='text-[11px]'
               onClick={handleSaveEditor}
             >
-              Áp dụng & Lưu
+              {t('settings.appearance.applyAndSave')}
             </Button>
           </DialogFooter>
         </DialogContent>

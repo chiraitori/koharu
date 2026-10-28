@@ -375,7 +375,43 @@
         "light": "浅色",
         "system": "系统"
       },
-      "title": "外观"
+      "title": "外观",
+      "customTheme": "自定义主题与 JSON 调色板",
+      "customThemeDescription": "选择预设调色板或通过 JSON 文件自定义界面颜色。",
+      "importJson": "导入 JSON",
+      "exportJson": "导出 JSON",
+      "editJson": "编辑 JSON",
+      "createTheme": "新建主题",
+      "deleteTheme": "删除主题",
+      "editorTitle": "编辑主题 JSON",
+      "editorDescription": "在 light 和 dark 部分自定义 CSS 颜色变量。",
+      "applyAndSave": "应用并保存",
+      "cancel": "取消",
+      "themePresets": {
+        "default": "Koharu Pink (默认)",
+        "defaultDesc": "原始樱花粉色主题。",
+        "nahida-sage": "纳西妲草木绿",
+        "nahida-sageDesc": "与纳西妲图标呼应的翡翠与鼠尾草绿调。",
+        "midnight-obsidian": "黑曜石午夜黑",
+        "midnight-obsidianDesc": "深邃的 AMOLED 纯黑暗黑模式。",
+        "cyber-neon": "赛博霓虹",
+        "cyber-neonDesc": "深紫色与青色霓虹未来风格。"
+      },
+      "toasts": {
+        "themeChanged": "已切换主题",
+        "applying": "当前应用：{{name}}",
+        "importSuccess": "主题导入成功",
+        "importSuccessDesc": "已安装主题：{{name}}",
+        "importError": "无法读取主题文件",
+        "exportSuccess": "主题导出成功",
+        "exportSuccessDesc": "已下载 {{file}}",
+        "exportError": "导出失败",
+        "saveSuccess": "主题已保存",
+        "saveSuccessDesc": "主题“{{name}}”已保存并生效。",
+        "deleteSuccess": "主题已删除",
+        "deleteSuccessDesc": "自定义主题已被移除。",
+        "invalidJson": "JSON 格式无效"
+      }
     },
     "backToEditor": "返回编辑器",
     "generation": {

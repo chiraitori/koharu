@@ -375,7 +375,43 @@
         "light": "Light",
         "system": "System"
       },
-      "title": "Appearance"
+      "title": "Appearance",
+      "customTheme": "Custom Theme & Palette",
+      "customThemeDescription": "Choose a preset palette or customize interface colors via JSON file.",
+      "importJson": "Import JSON",
+      "exportJson": "Export JSON",
+      "editJson": "Edit JSON",
+      "createTheme": "New Theme",
+      "deleteTheme": "Delete theme",
+      "editorTitle": "Edit Theme JSON",
+      "editorDescription": "Customize CSS color variables in light and dark sections.",
+      "applyAndSave": "Apply & Save",
+      "cancel": "Cancel",
+      "themePresets": {
+        "default": "Koharu Pink (Default)",
+        "defaultDesc": "Original sakura pink theme.",
+        "nahida-sage": "Nahida Sage",
+        "nahida-sageDesc": "Harmonious emerald and sage green palette.",
+        "midnight-obsidian": "Midnight Obsidian",
+        "midnight-obsidianDesc": "Pure AMOLED dark mode with subtle zinc borders.",
+        "cyber-neon": "Cyber Neon",
+        "cyber-neonDesc": "Futuristic palette with deep purple and neon cyan."
+      },
+      "toasts": {
+        "themeChanged": "Theme changed",
+        "applying": "Active theme: {{name}}",
+        "importSuccess": "Theme imported",
+        "importSuccessDesc": "Installed theme: {{name}}",
+        "importError": "Failed to read theme file",
+        "exportSuccess": "Theme exported",
+        "exportSuccessDesc": "Downloaded {{file}}",
+        "exportError": "Export failed",
+        "saveSuccess": "Theme saved",
+        "saveSuccessDesc": "Theme \"{{name}}\" has been saved and applied.",
+        "deleteSuccess": "Theme deleted",
+        "deleteSuccessDesc": "Custom theme has been removed.",
+        "invalidJson": "Invalid JSON syntax"
+      }
     },
     "backToEditor": "Back to editor",
     "generation": {
