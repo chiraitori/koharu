@@ -8,8 +8,8 @@ pub fn initialize() -> sentry::ClientInitGuard {
         .sample_rate(0.1)
         .auto_session_tracking(true);
     options.dsn = option_env!("SENTRY_DSN")
-        .into_dsn()
-        .expect("invalid SENTRY_DSN environment variable");
+        .filter(|s| !s.trim().is_empty())
+        .and_then(|s| s.into_dsn().ok().flatten());
     sentry::init(options)
 }
 
