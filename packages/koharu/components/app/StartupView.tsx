@@ -20,7 +20,7 @@ export function StartupView() {
           {!macOS && (
             <div className='grid h-full w-10 place-items-center rounded-br-lg'>
               <Image
-                className='pointer-events-none'
+                className='pointer-events-none rounded-[3px]'
                 src='/icon.png'
                 alt=''
                 width={17}

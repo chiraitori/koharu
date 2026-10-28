@@ -68,7 +68,7 @@ export function TitleBar() {
         ) : (
           <div className='relative z-10 flex h-full w-10 shrink-0 items-center justify-center rounded-br-lg'>
             <Image
-              className='pointer-events-none'
+              className='pointer-events-none rounded-[3px]'
               src='/icon.png'
               alt='kore-minit'
               width={17}

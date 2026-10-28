@@ -45,7 +45,7 @@ export function AboutDialog({
       <DialogContent className='max-w-xs gap-4 p-5'>
         <div className='flex items-center gap-3'>
           <div className='grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10'>
-            <Image src='/icon.png' alt='' width={30} height={30} priority />
+            <Image className='rounded-md' src='/icon.png' alt='' width={30} height={30} priority />
           </div>
           <DialogHeader className='min-w-0 gap-1'>
             <DialogTitle className='text-[15px]'>kore-minit</DialogTitle>
