@@ -25,6 +25,7 @@ import {
   PreferenceSection,
 } from '@/components/preferences/PreferenceFields'
 import { ProviderPreferences } from '@/components/preferences/ProviderPreferences'
+import { ThemePreferences } from '@/components/preferences/ThemePreferences'
 import { TranslationPreferences } from '@/components/preferences/TranslationPreferences'
 import { TypesettingPreferences } from '@/components/preferences/TypesettingPreferences'
 import { refreshPreferences, refreshTranslationModels, savePreferences } from '@/lib/backend'
@@ -285,6 +286,7 @@ function AppearancePreferences() {
             ))}
           </div>
         </PreferenceRow>
+        <ThemePreferences />
         <PreferenceRow title={t('settings.appearance.language')}>
           <Select
             value={i18n.language}

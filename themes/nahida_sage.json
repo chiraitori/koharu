@@ -1,0 +1,32 @@
+{
+  "name": "Nahida Sage",
+  "author": "chiraitori",
+  "version": "1.0",
+  "description": "Tông màu xanh lá ngọc bích hài hòa cùng icon Nahida.",
+  "light": {
+    "--primary": "#2d6a4f",
+    "--primary-foreground": "#ffffff",
+    "--accent": "#e8f5ee",
+    "--accent-foreground": "#1b4332",
+    "--ring": "#2d6a4f",
+    "--surface-titlebar": "#f0f7f3",
+    "--surface-sidebar": "#f0f7f3",
+    "--border": "#d8e8de"
+  },
+  "dark": {
+    "--primary": "#52b788",
+    "--primary-foreground": "#081c12",
+    "--accent": "#183526",
+    "--accent-foreground": "#b7e4c7",
+    "--ring": "#52b788",
+    "--surface-titlebar": "#0c1410",
+    "--surface-toolbar": "#070c09",
+    "--surface-sidebar": "#0c1410",
+    "--surface-panel": "#0e1713",
+    "--surface-floating": "#14211b",
+    "--surface-well": "#111c17",
+    "--surface-canvas": "#070b09",
+    "--background": "#070b09",
+    "--border": "#1b2922"
+  }
+}

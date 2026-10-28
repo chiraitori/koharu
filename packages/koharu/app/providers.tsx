@@ -11,6 +11,7 @@ import ClientOnly from '@/components/ClientOnly'
 import { toolActionDescription } from '@/components/editor/AgentPanel'
 import { refreshTranslationModels } from '@/lib/backend'
 import i18n from '@/lib/i18n'
+import { initTheme } from '@/lib/theme'
 import { pageKey, pagesKey, projectKey, queryClient, refresh } from '@/lib/queries'
 import {
   receiveCanvas,
@@ -37,6 +38,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const lifecycle = runtime.current
+    initTheme()
     lifecycle.active = true
     if (!lifecycle.bound) {
       lifecycle.bound = true
